@@ -25,6 +25,7 @@ void client_page::request_connect()
 	asio::ip::tcp::resolver resolver(io_context);
 
 	auto endpoints = resolver.resolve("127.0.0.1", "12312");
+	ui.text_log->insertPlainText(u8"ip 127.0.0.1 ¶Ë¿Ú 12312\n");
 
 	p_ = std::make_shared<down_json>(io_context, endpoints, this);
 

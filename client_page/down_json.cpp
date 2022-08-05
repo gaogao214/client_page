@@ -44,7 +44,7 @@ void down_json::do_connect(const asio::ip::tcp::resolver::results_type& endpoint
 				parse_down_jsonfile(down_json_name);
 
 				//cout << "客户端端口 12312 与服务器端口 12312 连接成功\n";
-			//	recive_list();//接收list.json文件名字
+				recive_list();//接收list.json文件名字
 				//cli_ptr_->ui.connect->setText(u8"已连接");
 				
 			}	
@@ -65,7 +65,7 @@ void  down_json::parse_down_jsonfile(string& name)//打开配置文件，并找�
 	string readbuffer = open_json_file(name);
 	downfile_path.deserializeFromJSON(readbuffer.c_str());
 
-	recive_list();
+//	recive_list();
 }
 
 void  down_json::parse_client_list_json(string& name)//打开list_json   json文件  解析json文件
