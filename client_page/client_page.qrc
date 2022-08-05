@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="client_page">
+    <file>images/5.png</file>
+    <file>images/6.png</file>
+    <file>images/7.png</file>
+    <file>images/client.ico</file>
+  </qresource>
+</RCC>
