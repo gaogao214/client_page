@@ -142,18 +142,21 @@ void down_json::recive_list()//接收list.json文件名字
 			if (!ec)
 			{
 				//cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件\n");
-				std::memcpy(&list_name_len, list_len, sizeof(size_t));
-				//int list_name_len = atoi(list_len);
+				//std::memcpy(&list_name_len, list_len, sizeof(size_t));
+				/*int */list_name_len = atoi(list_len);
 				list_name.resize(list_name_len);
 				asio::async_read(socket_, asio::buffer(list_name, list_name_len),
 					[this](std::error_code ec, std::size_t)
 					{
 						if (!ec)
 						{
-							cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件\n");
+
+							cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件完成\n");
 
 							auto pos = list_name.find_first_of("*");
 							auto name = list_name.substr(0, pos);
+							cli_ptr_->ui.file_name->setText(name.data());
+
 							auto text = list_name.substr(pos + 1);
 
 							cout << "下载 " << list_name << " 文本" << endl;
@@ -208,18 +211,21 @@ void down_json::recive_id()//接收id文件的名字
 		{
 			if (!ec)
 			{
+				/*int */id_name_len = atoi(id_len);
 
-				std::memcpy(&id_name_len, id_len, sizeof(size_t));
+				//std::memcpy(&id_name_len, id_len, sizeof(size_t));
 				id_name_text.resize(id_name_len);
 				asio::async_read(socket_, asio::buffer(id_name_text.data(), id_name_len),
 					[this](std::error_code ec, std::size_t)
 					{
 						if (!ec)
 						{
-							cli_ptr_->ui.text_log->insertPlainText(u8"下载id.json文件\n");
+							cli_ptr_->ui.text_log->insertPlainText(u8"下载id.json文件完成\n");
 
 							auto pos = id_name_text.find_first_of("*");
 							auto name = id_name_text.substr(0, pos);
+							cli_ptr_->ui.file_name->setText(name.data());
+
 							auto text = id_name_text.substr(pos + 1);
 
 							save_file(name, text);//保存内容

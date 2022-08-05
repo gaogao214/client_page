@@ -157,6 +157,5 @@ private:
 	std::string id_port_buf;						//发送的id和port的长度和内容
 	ThreadPool pool;
 	volatile int len = 0;
-	char str_[1024]="get";
 	client_page* cli_ptr_;
 };
