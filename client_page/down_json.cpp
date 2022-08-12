@@ -12,23 +12,14 @@ using namespace rapidjson;
 //down_json* g_down_json = nullptr;
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
-down_json::down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, client_page* cli)
-	: io_context_(io_context)
-	, socket_(io_context)
-	, pool(2)
-	, cli_ptr_(cli)
-{
-	//g_down_json = this;
-	do_connect(endpoints);
-}
 
-down_json::down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
-	: io_context_(io_context)
+
+down_json::down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_*/)
+	: io_context(io_context)
 	, socket_(io_context)
 	, pool(2)
-	, cli_ptr_(new client_page())
+	/*, cli_ptr_(cli_)*/
 {
-	//g_down_json = this;
 	do_connect(endpoints);
 }
 
@@ -38,25 +29,29 @@ void down_json::do_connect(const asio::ip::tcp::resolver::results_type& endpoint
 		[this](std::error_code ec, asio::ip::tcp::endpoint)
 		{
 			if (!ec)
-			{
-				cli_ptr_->ui.text_log->insertPlainText(u8"端口 12312 连接成功\n");
-				//get_list_from_server_();
-				parse_down_jsonfile(down_json_name);
+			{			
+				OutputDebugString(L"s端口12312 连接成功");
 
-				//cout << "客户端端口 12312 与服务器端口 12312 连接成功\n";
-				recive_list();//接收list.json文件名字
-				//cli_ptr_->ui.connect->setText(u8"已连接");
-				
+				parse_down_jsonfile(down_json_name);			
 			}	
-			else {
-				//cout << "客户端端口 12312 与服务器端口 12312 连接失败\n";
-				//cli_ptr_->ui.connect->setText(u8"连接失败");
-				cli_ptr_->ui.text_log->insertPlainText(u8"端口 12312 连接失败\n");
-
-			
-			}
-			
+			else {	
+				OutputDebugString(L"s端口12312 连接失败");
+			}		
 		});
+
+	//asio::async_connect(socket_, endpoints, std::forward<Func>(f));
+	//asio::async_connect(socket_, endpoints, 
+	//	[this](std::error_code ec, asio::ip::tcp::endpoint)
+	//	{
+	//		if (!ec)
+	//		{
+	//			f();
+
+	//			parse_down_jsonfile(down_json_name);
+	//		}
+	//	});
+
+
 }
 
 
@@ -64,8 +59,8 @@ void  down_json::parse_down_jsonfile(string& name)//打开配置文件，并找�
 {
 	string readbuffer = open_json_file(name);
 	downfile_path.deserializeFromJSON(readbuffer.c_str());
+	recive_list();//接收list.json文件名字	
 
-//	recive_list();
 }
 
 void  down_json::parse_client_list_json(string& name)//打开list_json   json文件  解析json文件
@@ -111,28 +106,7 @@ std::string down_json::open_json_file(const std::string& json_name)//打开指�
 	return content;
 
 }
-/*获取列表*/
-//void down_json::get_list_from_server_()
-//{
-//
-//	//auto self = shared_from_this();
-//	size_t size = strlen(str_);
-// 	asio::async_write(socket_, asio::buffer(str_, size),	//一次传输文件名长度和文件名
-//		[/*self,*/this](std::error_code ec, std::size_t)
-//		{
-//			if (!ec)
-//			{
-//				cli_ptr_->ui.text_log->insertPlainText(u8"列表获取成功\n");
-//				
-//				//recive_list();
-//			}
-//			else
-//			{
-//				cli_ptr_->ui.text_log->insertPlainText(u8"列表获取失败\n");
-//
-//			}
-//		});
-//}
+
 
 void down_json::recive_list()//接收list.json文件名字
 {
@@ -141,23 +115,32 @@ void down_json::recive_list()//接收list.json文件名字
 		{
 			if (!ec)
 			{
-				//cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件\n");
+				
 				//std::memcpy(&list_name_len, list_len, sizeof(size_t));
 				/*int */list_name_len = atoi(list_len);
+				
+				emit sign_pro_bar(list_name_len, 0);
+
 				list_name.resize(list_name_len);
 				asio::async_read(socket_, asio::buffer(list_name, list_name_len),
 					[this](std::error_code ec, std::size_t)
 					{
 						if (!ec)
-						{
-
-							cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件完成\n");
+						{							
+							//cli_ptr_->ui.text_log->insertPlainText(u8"下载list.json文件完成\n");
+							OutputDebugString(L"list.json文件接收成功");
 
 							auto pos = list_name.find_first_of("*");
 							auto name = list_name.substr(0, pos);
-							cli_ptr_->ui.file_name->setText(name.data());
-
+						
 							auto text = list_name.substr(pos + 1);
+							float bai = (list_name_len / list_name_len)*100;
+							
+							//只注释了这一行156
+							//complete_process_.set_value(bai);
+							
+							emit sign_pro_bar(list_name_len,list_name_len);
+						
 
 							cout << "下载 " << list_name << " 文本" << endl;
 							parse_server_list_json(text);
@@ -165,12 +148,14 @@ void down_json::recive_list()//接收list.json文件名字
 							recive_id();//接收id的名字
 						}
 					});
+
+				
 			}
 		});
 
+	//auto percent = complete_process_.get_future().get();
 
-	
-
+	//progress_bar_show(percent);
 }
 
 void down_json::isfile_exist(const string file_buf, int buf_len)//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
@@ -213,6 +198,8 @@ void down_json::recive_id()//接收id文件的名字
 			{
 				/*int */id_name_len = atoi(id_len);
 
+				emit sign_pro_bar(id_name_len, 0);
+
 				//std::memcpy(&id_name_len, id_len, sizeof(size_t));
 				id_name_text.resize(id_name_len);
 				asio::async_read(socket_, asio::buffer(id_name_text.data(), id_name_len),
@@ -220,13 +207,16 @@ void down_json::recive_id()//接收id文件的名字
 					{
 						if (!ec)
 						{
-							cli_ptr_->ui.text_log->insertPlainText(u8"下载id.json文件完成\n");
+
+							OutputDebugString(L"id.json文件接收成功");
 
 							auto pos = id_name_text.find_first_of("*");
 							auto name = id_name_text.substr(0, pos);
-							cli_ptr_->ui.file_name->setText(name.data());
+							//cli_ptr_->ui.file_name->setText(name.data());
 
 							auto text = id_name_text.substr(pos + 1);
+						
+							emit sign_pro_bar(id_name_len, id_name_len);
 
 							save_file(name, text);//保存内容
 							parse_block_json(text);
@@ -242,10 +232,11 @@ void down_json::recive_id()//接收id文件的名字
 void down_json::down_json_run(filestruct::block Files, string& loadip, string& loadport, const string& comePort)//连接下载文件的端口
 {
 	try {
+		//cli_ptr_->down_file(Files, loadip, loadport, comePort);
 		asio::io_context ios;
 		asio::ip::tcp::resolver resolver_(ios);
 		auto endpoint = resolver_.resolve({ loadip,loadport });
-		down_block db(ios, endpoint, Files);
+		down_block db(ios, endpoint, Files/*, cli_ptr_*/);
 
 		ios.run();
 	}
@@ -290,9 +281,9 @@ void down_json::down_load()//把任务放在线程池里向服务器请求下载
 				//auto it = blks_.blocks.find(blks.blocks_.begin(), blks.blocks_.end(), blks.blocks_[iter.blockid].id);//找到要下载文件的id 
 				if (it == blks_.blocks.end())//没有找到
 					continue;
+				OutputDebugString(L"转文件io_context");
 
 				pool.enqueue(bind(&down_json::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, to_string(iter.blockid)));
-
 
 			}
 		}

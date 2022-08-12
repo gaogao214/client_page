@@ -61,9 +61,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\..\Asio;E:\File_up_download\2022.6.16\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Object_gao\File_up_download\profile\Asio;E:\Object_gao\File_up_download\profile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <ConformanceMode>Default</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -94,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="down_json.cpp" />
+    <ClCompile Include="server_wget_c_file.cpp" />
     <ClCompile Include="wget_c_file.cpp" />
     <QtRcc Include="client_page.qrc" />
     <QtUic Include="client_page.ui" />
@@ -110,8 +112,9 @@
     <ClInclude Include="..\..\server_page\server_page\common.h" />
     <ClInclude Include="..\..\server_page\server_page\GxJsonUtility.h" />
     <ClInclude Include="down_block.h" />
-    <ClInclude Include="down_json.h" />
+    <QtMoc Include="down_json.h" />
     <ClInclude Include="file_server.h" />
+    <ClInclude Include="server_wget_c_file.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="wget_c_file.h" />
   </ItemGroup>

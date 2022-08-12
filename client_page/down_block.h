@@ -13,10 +13,10 @@ using namespace std;
 //	struct block;
 //}
 
-class down_block:public enable_shared_from_this<down_block>
+class down_block/*:public enable_shared_from_this<down_block>*/
 {
 public:
-	down_block(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files);
+	down_block(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files/*, client_page* cli_ptr*/);
 
 	void do_connect( asio::ip::tcp::resolver::results_type& endpoints);
 
@@ -40,11 +40,18 @@ public:
 
 	void save_file(const string& fname);
 
+	void run()
+	{
+		io_context_.run();
+	}
+	
+public:
 	string id_ip_port_;
 
 private:
 	filestruct::block& blk;//feige
 	int downloadingIndex=0;//下载完的个数
+	asio::io_context& io_context_;
 	asio::ip::tcp::socket socket_;
 	string File_name;//发送的名字以及名字长度
 	char recive_file_len[4096] = { 0 };//接收文件的长度	
@@ -57,7 +64,12 @@ private:
 	string id_;   //id 号
 	string wget_name;   //断点时的名字
 	filestruct::wget_c_file wcf;
+
 	filestruct::wget_c_file_info wcfi;  //声明一个结构体
+
 	filestruct::wget_c_file_info wcfi1;  //声明一个结构体
+
 	down_json dj;       //声明一个down_json类
+
+	//client_page* cli_ptr_;
 };

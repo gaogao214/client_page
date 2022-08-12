@@ -10,7 +10,8 @@
 #include <iostream>
 #include <filesystem>
 #include "ThreadPool.h"
-
+#include <QtWidgets/QMainWindow>
+#include <QObject>
 
 using namespace asio::ip;
 
@@ -87,14 +88,13 @@ class down_json;
 extern  filestruct::profile downfile_path;      //配置文件
 extern  filestruct::files_info files_inclient;	//解析客户端本地的json文本
 
-class down_json :public std::enable_shared_from_this<down_json>
+class down_json :public QObject,public std::enable_shared_from_this<down_json>
 {
+	Q_OBJECT
 public:
-	down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, client_page* cli);
-
-	down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints);
-
-	//void get_list_from_server_();
+	//template<typename Func>
+	//down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, client_page* cli_, Func&& f);
+	down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_*/);
 
 	void parse_down_jsonfile(std::string& name);			//打开down.json配置文件
 
@@ -113,6 +113,13 @@ public:
 	filestruct::wget_c_file_info parse_wget_c_file_json(std::string& name);//打开wget_c_file.json 断点续传配置文件
 
 
+
+signals:
+
+	void sign_pro_bar( int maxvalue_ , int value_ );
+	
+
+public:
 	filestruct::files_info files_inserver;		//解析服务器的json文本
 
 	filestruct::blocks blks_;					//解析id.json文本
@@ -124,13 +131,14 @@ public:
 	std::string wget_c_file1 = "wget_c_file1.json";
 	filestruct::wget_c_file_info wcfi;			//声明一个结构体
 
+	std::promise<float> complete_process_;
+
 	void run()
 	{
-		io_context_.run();
+		io_context.run();
 	}
 
 private:
-
 	void do_connect(const asio::ip::tcp::resolver::results_type& endpoints);
 	
 	void recive_list();							//接收list.json文件名和内容
@@ -143,7 +151,7 @@ private:
 
 	void save_file(const std::string& name , const std::string& file_buf);//保存文件
 
-	asio::io_context& io_context_;
+	asio::io_context& io_context;
 	asio::ip::tcp::socket socket_;
 
 	char list_len[sizeof(size_t)];			//接收list.json文件名的长度
@@ -157,5 +165,7 @@ private:
 	std::string id_port_buf;						//发送的id和port的长度和内容
 	ThreadPool pool;
 	volatile int len = 0;
-	client_page* cli_ptr_;
+//	client_page* cli_ptr_;
+
+	
 };

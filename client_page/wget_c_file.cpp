@@ -1,9 +1,10 @@
+/*断点续传*/
 #include "wget_c_file.h"
 
 
-wget_c_file::wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints)
+wget_c_file::wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_ptr*/)
 	:socket_(io_context)
-	,dj(io_context,endpoints)
+	,dj(io_context,endpoints/*, cli_ptr*/)
 {
 	do_connect(endpoints);
 }
@@ -15,10 +16,12 @@ void wget_c_file::do_connect(asio::ip::tcp::resolver::results_type& endpoints)
 		{
 			if (!ec)
 			{
+				OutputDebugString(L"s 12313连接成功");
 				std::cout << "客户端端口 12313 与服务器端口 12313 连接成功\n";
 				do_send_wget_file_name();
 			}
-			else {			
+			else {	
+				OutputDebugString(L"s 12313连接失败");
 				std::cout << "客户端端口 12313 与服务器端口 12313 连接失败\n";
 			}
 		});
@@ -38,6 +41,8 @@ void wget_c_file::do_send_wget_file_name()
 		{
 			if (!ec)
 			{
+				OutputDebugString(L"s 断点续传文件发送成功");
+
 				do_send_wget_file_name_offset();//发送文件的内容
 			}
 		});
@@ -58,6 +63,8 @@ void wget_c_file::do_send_wget_file_name_offset()
 		{
 			if (!ec)
 			{
+				OutputDebugString(L"s 断点续传文件内容成功");
+
 				std::cout <<wget_text << "发送成功\n";
 				do_recive_wget_file();
 			}
@@ -75,7 +82,8 @@ void wget_c_file::do_recive_wget_file()
 			{			
 				memcpy(&num,recive_wget_len,sizeof(size_t));	
 				std::memset(recive_wget_len, 0, sizeof(size_t));//清空内存
-			
+				OutputDebugString(L"s 接收长度成功");
+
 				recive_wget_name.resize(num);
 				asio::async_read(socket_, asio::buffer(recive_wget_name.data(), num),
 					[this](std::error_code ec, std::size_t)
@@ -96,6 +104,7 @@ void wget_c_file::do_recive_wget_file()
 								offset = str1.substr(0,pos2);
 								wget_text = str1.substr(pos2 + 1);
 								
+								OutputDebugString(L"s 文件接收成功");
 
 
 					

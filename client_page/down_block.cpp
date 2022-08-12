@@ -6,13 +6,15 @@
 #include <filesystem>
 #include "file_server.h"
 #include "wget_c_file.h"
-
+/*下载文件*/
 //down_json* g_down_json = nullptr;
 
-down_block::down_block(asio::io_context& io_context,asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files)
+down_block::down_block(asio::io_context& io_context,asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files/*, client_page* cli_ptr*/)
 	:socket_(io_context)
+	,io_context_(io_context)
 	,blk(Files)
-	,dj(io_context,endpoints)
+	,dj(io_context,endpoints/*, cli_ptr*/)
+	//, cli_ptr_(cli_ptr)
 {
 	do_connect(endpoints);
 	dj.parse_client_list_json(dj.list_json);
@@ -25,17 +27,21 @@ void down_block::do_connect(asio::ip::tcp::resolver::results_type& endpoints)
 		{
 			if (!ec)
 			{
+				OutputDebugString(L"s 12314连接成功");
+
 				cout << "客户端端口 12314 与服务器端口 12314 连接成功\n";
 				do_send_filename();	
 			}
 			else//下载时连接出错
 			{
 				cout << "客户端端口 12314 与服务器端口 12314 连接失败\n";
+				OutputDebugString(L"s 12314连接失败");
+
 				cout << "向主服务器连接\n";
 				asio::io_context ios_;
 				asio::ip::tcp::resolver resolver_(ios_);
 				auto endpoint_ = resolver_.resolve({ "127.0.0.1","12314" });
-				down_block df(ios_, endpoint_, blk);
+				down_block df(ios_, endpoint_, blk/*, cli_ptr_*/);
 				ios_.run();
 			}
 		});
@@ -199,14 +205,16 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 			save_location(fname, no_path_added_name);
 			Breakpoint_location();
 			 
-			asio::io_context ios_;
+
+
+			/*asio::io_context ios_;
 			asio::ip::tcp::resolver resolver_(ios_);
 
 			auto endpoint_ = resolver_.resolve({ "127.0.0.1","12313" });
 
-			wget_c_file wcf(ios_,endpoint_);
+			wget_c_file wcf(ios_,endpoint_, cli_ptr_);
 			
-			ios_.run();
+			ios_.run();*/
 
 			 }
 		});
@@ -273,14 +281,10 @@ void down_block::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,const s
 
 void down_block::client_to_server(string profile_port)//开一个线程，客户端转换成服务端
 {
-
 	thread t(std::bind(&down_block::server, this, profile_port));
 	/*	t.join();*/
 	cout << "客户端: id: " << id_ << "  端口号: " << profile_port << " 变成服务端\n";
-
 	t.detach();
-
-
 }
 
 void down_block::server(const std::string& server_port)//客户端转换成服务端

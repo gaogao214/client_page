@@ -1,60 +1,130 @@
 #include "client_page.h"
 #include "asio.hpp"
 #include "down_json.h"
-
-client_page::client_page(QWidget *parent)
-    : QMainWindow(parent)
+#include <QprogressBar>
+#include <QMetaObject>
+#include <Qstring>
+#include "wget_c_file.h"
+#include "down_block.h"
+client_page::client_page(QWidget* parent)
+	: QMainWindow(parent)
+	//, main_thread_ptr_(new std::thread())
+	, connect_ptr_(new std::thread())
+	//,down_json_(io_context,endpoints,cli_page_)
 {
-    ui.setupUi(this);
+	ui.setupUi(this);
+
+	ui.pro_bar->setOrientation(Qt::Horizontal);  //进度条水平方向
+	ui.pro_bar->setMinimum(0);  //最小值
 
 	connect(ui.connect, &QPushButton::clicked, this, &client_page::request_connect);
-	//connect(ui.connect,SIGNAL(clicked(bool)), this,SLOT(request_connect(bool)));
-	//ui.connect->setCheckable(true);
-	connect(ui.get_list, &QPushButton::clicked, this, &client_page::get_list_from_server);
-
+	connect(ui.go_on, &QPushButton::clicked, this, &client_page::wget_c_file_);
+	
 	//清理本地文件
 }
 
 client_page::~client_page()
-{}
+{
+		
+}
+
+void client_page::init()
+{
+	
+}
 
 void client_page::request_connect()
 {
-	ui.get_list->setEnabled(true);
 
-	asio::ip::tcp::resolver resolver(io_context);
+	try
+	{
+		connect_ptr_.reset(new std::thread([this]()
+			{
+				asio::ip::tcp::resolver resolver(io_context);
+				auto endpoints = resolver.resolve("127.0.0.1", "12312");
 
-	auto endpoints = resolver.resolve("127.0.0.1", "12312");
-	ui.text_log->insertPlainText(u8"ip 127.0.0.1 端口 12312\n");
+				p_ = std::make_shared<down_json>(io_context, endpoints/*, this*/);
+				/*thread_ = new QThread();
+				p_->moveToThread(thread_);*/
+				
+				QMetaObject::Connection connecthanndle = connect(p_.get(), SIGNAL(sign_pro_bar(int ,int )), this, SLOT(show_progress_bar(int ,int)), Qt::QueuedConnection);
+				if (connecthanndle)
+				{
+					OutputDebugString(L"槽函数关联成功\n");
 
-	p_ = std::make_shared<down_json>(io_context, endpoints, this);
+				}
+				//thread_->start();
+		/*connect_ptr_.reset(new std::thread([this]()
+			{*/
+				p_->run();
+			}));
 
-	p_->run();
+		connect_ptr_->detach();
+	//	connect_ptr_->join();
 
-	//ui.connect->setText(u8"已连接");
+	}
+	catch (...)
+	{
+		OutputDebugString(L"s出现异常\n");
 
-	//main_thread_ptr_->join();
+	}
+	
+	/*while (true)
+	{
+		auto future = p_->complete_process_.get_future();
+
+		future.wait();
+		
+		ui.pro_bar->setValue(future.get());
+		break;
+	}*/
+
+
+	//auto f = [this]()
+	//{
+	//	ui.text_log->insertPlainText(u8"端口 12312 连接成功\n");
+	//};
+
+	//connect_ptr_.reset(new std::thread([this,f]()
+	//	{
+	//		asio::ip::tcp::resolver resolver(io_context);
+	//		auto endpoints = resolver.resolve("127.0.0.1", "12312");
+	//		p_ = std::make_shared<down_json>(io_context, endpoints, this, f);
+	//		p_->run();
+	//	}));
+	//connect_ptr_->detach();
+}
+
+
+void client_page::wget_c_file_()
+{
+
+	std::thread t1([this]()
+		{
+			asio::io_context ios_;
+			asio::ip::tcp::resolver resolver_1(ios_);
+			auto endpoint_1 = resolver_1.resolve({ "127.0.0.1","12313" });
+			wget_c_file wcf(ios_, endpoint_1/*,this*/);
+			ios_.run();
+		});
+	t1.detach();
 
 }
 
-void client_page::get_list_from_server()
+void client_page::show_progress_bar( int maxvalue_ ,int value_)
 {
+	ui.pro_bar->setMaximum(maxvalue_);  //最大值
+	OutputDebugString(L"pro_bar进度条___________+++++++++++++++++++++++++++++++++++++++++++=================\n");
+	ui.pro_bar->setValue(value_);  //当前进度
 
-	//向服务器发送请求，我要获取列表
-	//std::cout << "d" << std::endl;
-	//std::string str = "d";
-	//OutputDebugStringA(str.data());
-	
+	dpro = (ui.pro_bar->value() - ui.pro_bar->minimum()) * 100 / (ui.pro_bar->maximum() - ui.pro_bar->minimum());
 
+	ui.pro_bar->setFormat(QString::fromLocal8Bit("当前进度为:%1%").arg(QString::number(dpro, 'f', 1)));
+	//ui.pro_bar->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+}
 
-	//p_->get_list_from_server_();
-
-
-	//ui.text_log->insertPlainText(u8"获取成功\n");
-	
-	//p_->get_list_from_server([this]() 
-	//	{
-	//		p_->down_json_profile();
-	//	});
+void client_page::show_file_name(char file_name[512])
+{
+	ui.file_name->setText(file_name);
 
 }

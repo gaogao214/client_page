@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>552</width>
-    <height>416</height>
+    <height>415</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,10 +21,10 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>491</width>
-      <height>361</height>
+      <x>10</x>
+      <y>10</y>
+      <width>461</width>
+      <height>311</height>
      </rect>
     </property>
     <property name="title">
@@ -52,14 +52,14 @@
     <widget class="QTextBrowser" name="text_log">
      <property name="geometry">
       <rect>
-       <x>91</x>
-       <y>14</y>
+       <x>100</x>
+       <y>20</y>
        <width>351</width>
-       <height>81</height>
+       <height>111</height>
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="get_list">
+    <widget class="QPushButton" name="stop">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -75,14 +75,14 @@
       <string notr="true">background-image: url(:/client_page/images/7.png);</string>
      </property>
      <property name="text">
-      <string>获取列表</string>
+      <string>暂停</string>
      </property>
     </widget>
     <widget class="QLabel" name="file_name">
      <property name="geometry">
       <rect>
        <x>140</x>
-       <y>130</y>
+       <y>180</y>
        <width>101</width>
        <height>20</height>
       </rect>
@@ -100,24 +100,24 @@
       <number>14</number>
      </property>
     </widget>
-    <widget class="QProgressBar" name="par_bar">
+    <widget class="QProgressBar" name="pro_bar">
      <property name="geometry">
       <rect>
        <x>60</x>
-       <y>170</y>
+       <y>220</y>
        <width>351</width>
        <height>20</height>
       </rect>
      </property>
      <property name="value">
-      <number>24</number>
+      <number>0</number>
      </property>
     </widget>
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>120</y>
+       <y>170</y>
        <width>101</width>
        <height>41</height>
       </rect>
@@ -130,6 +130,25 @@
      </property>
      <property name="indent">
       <number>3</number>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="go_on">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-image: url(:/client_page/images/7.png);</string>
+     </property>
+     <property name="text">
+      <string>继续</string>
      </property>
     </widget>
    </widget>

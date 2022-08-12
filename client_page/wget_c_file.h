@@ -8,7 +8,7 @@
 class wget_c_file :public std::enable_shared_from_this<wget_c_file>
 {
 public:
-	wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints);
+	wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_ptr*/);
 
 	void do_connect(asio::ip::tcp::resolver::results_type& endpoints);
 
@@ -19,6 +19,10 @@ public:
 
 
 	void do_recive_wget_file();
+	void run()
+	{
+		ios_.run();
+	}
 
 	inline size_t send_file_len(const std::string& filename)
 	{
@@ -50,6 +54,7 @@ private:
 	
 	asio::ip::tcp::socket socket_;
 	down_json dj;  //给 down_json 实例化
+	asio::io_context ios_;
 
 	std::string wget_text;						//发送断点续传文件的内容
 	std::string wget_c_name = "wget_c_file.json";
@@ -59,8 +64,6 @@ private:
 
 	
 	std::string offset;
-	
-
 	
 	std::string file_name;
 	size_t num=0;

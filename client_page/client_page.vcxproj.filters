@@ -61,11 +61,11 @@
     <ClCompile Include="down_json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="server_wget_c_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="down_json.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\server_page\server_page\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,10 +84,18 @@
     <ClInclude Include="wget_c_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="server_wget_c_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\client.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="down_json.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>
