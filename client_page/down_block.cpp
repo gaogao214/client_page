@@ -119,7 +119,6 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 					{
 						 file_size = 4096-sizeof(size_t)-1;		
 						 std::cout << "save recive len 2 >: " << file_size << endl;
-
 					}
 					else
 					{					
@@ -127,12 +126,14 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 						std::cout << "save recive len 2 >: " << filelen << endl;
 
 					}
-					
+					emit signal_pro_bar(filelen, 0);
+
 					std::string file_content(recive_file_len + sizeof(size_t) + 1);
 
 					ofstream id_File(fname, ios::binary);
 
  					id_File.write(file_content.c_str(), file_size);
+					emit signal_pro_bar(filelen, file_size);
 
 					id_File.close();
 										
@@ -281,7 +282,7 @@ void down_block::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,const s
 
 void down_block::client_to_server(string profile_port)//开一个线程，客户端转换成服务端
 {
-	thread t(std::bind(&down_block::server, this, profile_port));
+	std::thread t(std::bind(&down_block::server, this, profile_port));
 	/*	t.join();*/
 	cout << "客户端: id: " << id_ << "  端口号: " << profile_port << " 变成服务端\n";
 	t.detach();

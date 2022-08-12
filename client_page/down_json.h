@@ -91,9 +91,9 @@ extern  filestruct::files_info files_inclient;	//解析客户端本地的json文本
 class down_json :public QObject,public std::enable_shared_from_this<down_json>
 {
 	Q_OBJECT
+
 public:
-	//template<typename Func>
-	//down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, client_page* cli_, Func&& f);
+
 	down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_*/);
 
 	void parse_down_jsonfile(std::string& name);			//打开down.json配置文件
@@ -117,6 +117,8 @@ public:
 signals:
 
 	void sign_pro_bar( int maxvalue_ , int value_ );
+	void sign_file_name(QString file_name);
+	void sign_text_log(QString log_);
 	
 
 public:
@@ -165,7 +167,6 @@ private:
 	std::string id_port_buf;						//发送的id和port的长度和内容
 	ThreadPool pool;
 	volatile int len = 0;
-//	client_page* cli_ptr_;
 
 	
 };

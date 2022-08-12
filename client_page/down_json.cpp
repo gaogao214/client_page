@@ -31,11 +31,13 @@ void down_json::do_connect(const asio::ip::tcp::resolver::results_type& endpoint
 			if (!ec)
 			{			
 				OutputDebugString(L"s端口12312 连接成功");
-
+				emit sign_text_log(u8"端口12312 连接成功");
 				parse_down_jsonfile(down_json_name);			
 			}	
 			else {	
 				OutputDebugString(L"s端口12312 连接失败");
+				emit sign_text_log(u8"端口12312 连接失败");
+
 			}		
 		});
 
@@ -132,7 +134,9 @@ void down_json::recive_list()//接收list.json文件名字
 
 							auto pos = list_name.find_first_of("*");
 							auto name = list_name.substr(0, pos);
-						
+							
+							emit sign_file_name(name.data());
+
 							auto text = list_name.substr(pos + 1);
 							float bai = (list_name_len / list_name_len)*100;
 							
@@ -212,7 +216,8 @@ void down_json::recive_id()//接收id文件的名字
 
 							auto pos = id_name_text.find_first_of("*");
 							auto name = id_name_text.substr(0, pos);
-							//cli_ptr_->ui.file_name->setText(name.data());
+							
+							emit sign_file_name(name.data());
 
 							auto text = id_name_text.substr(pos + 1);
 						

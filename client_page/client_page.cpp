@@ -10,7 +10,6 @@ client_page::client_page(QWidget* parent)
 	: QMainWindow(parent)
 	//, main_thread_ptr_(new std::thread())
 	, connect_ptr_(new std::thread())
-	//,down_json_(io_context,endpoints,cli_page_)
 {
 	ui.setupUi(this);
 
@@ -28,11 +27,6 @@ client_page::~client_page()
 		
 }
 
-void client_page::init()
-{
-	
-}
-
 void client_page::request_connect()
 {
 
@@ -47,10 +41,25 @@ void client_page::request_connect()
 				/*thread_ = new QThread();
 				p_->moveToThread(thread_);*/
 				
-				QMetaObject::Connection connecthanndle = connect(p_.get(), SIGNAL(sign_pro_bar(int ,int )), this, SLOT(show_progress_bar(int ,int)), Qt::QueuedConnection);
-				if (connecthanndle)
+				QMetaObject::Connection connecthanndle_pro_bar = connect(p_.get(), SIGNAL(sign_pro_bar(int ,int )), this, SLOT(show_progress_bar(int ,int)), Qt::QueuedConnection);
+				if (connecthanndle_pro_bar)
 				{
-					OutputDebugString(L"槽函数关联成功\n");
+					OutputDebugString(L"pro bar槽函数关联成功\n");
+					ui.text_log->insertPlainText(u8"pro_bar 槽函数关联成功\n");
+
+				}
+				QMetaObject::Connection connecthanndle_name = connect(p_.get(), SIGNAL(sign_file_name(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
+				if (connecthanndle_name)
+				{
+					OutputDebugString(L"name 槽函数关联成功\n");
+					ui.text_log->insertPlainText(u8"name 槽函数关联成功\n");
+
+				}
+				QMetaObject::Connection connecthanndle_log = connect(p_.get(), SIGNAL(sign_text_log(QString)), this, SLOT(show_text_log(QString)), Qt::QueuedConnection);
+				if (connecthanndle_log)
+				{
+					OutputDebugString(L"text 槽函数关联成功\n");
+					ui.text_log->insertPlainText(u8"text_log 槽函数关联成功\n");
 
 				}
 				//thread_->start();
@@ -114,17 +123,21 @@ void client_page::wget_c_file_()
 void client_page::show_progress_bar( int maxvalue_ ,int value_)
 {
 	ui.pro_bar->setMaximum(maxvalue_);  //最大值
-	OutputDebugString(L"pro_bar进度条___________+++++++++++++++++++++++++++++++++++++++++++=================\n");
 	ui.pro_bar->setValue(value_);  //当前进度
 
 	dpro = (ui.pro_bar->value() - ui.pro_bar->minimum()) * 100 / (ui.pro_bar->maximum() - ui.pro_bar->minimum());
 
 	ui.pro_bar->setFormat(QString::fromLocal8Bit("当前进度为:%1%").arg(QString::number(dpro, 'f', 1)));
-	//ui.pro_bar->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+	ui.pro_bar->setAlignment(Qt::AlignRight | Qt::AlignCenter);
 }
 
-void client_page::show_file_name(char file_name[512])
+void client_page::show_file_name(QString file_name)
 {
 	ui.file_name->setText(file_name);
+}
+
+void client_page::show_text_log(QString log_)
+{
+	ui.text_log->insertPlainText(log_);
 
 }

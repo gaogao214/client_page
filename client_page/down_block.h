@@ -1,9 +1,11 @@
 #pragma once
 #include <asio.hpp>
+#include <QObject>
 #include "common.h"
 #include "GxJsonUtility.h"
 #include "rapidjson/filereadstream.h"
 #include "down_json.h"
+
 
 using namespace asio::ip;
 using namespace std;
@@ -13,8 +15,9 @@ using namespace std;
 //	struct block;
 //}
 
-class down_block/*:public enable_shared_from_this<down_block>*/
+class down_block:public QObject/*:public enable_shared_from_this<down_block>*/
 {
+	Q_OBJECT
 public:
 	down_block(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files/*, client_page* cli_ptr*/);
 
@@ -45,6 +48,13 @@ public:
 		io_context_.run();
 	}
 	
+
+signals:
+
+	void signal_pro_bar(int maxvalue,int value);
+	
+
+
 public:
 	string id_ip_port_;
 
