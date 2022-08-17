@@ -17,12 +17,13 @@ void wget_c_file::do_connect(asio::ip::tcp::resolver::results_type& endpoints)
 			if (!ec)
 			{
 				OutputDebugString(L"s 12313连接成功");
-				std::cout << "客户端端口 12313 与服务器端口 12313 连接成功\n";
+				emit sign_wget_c_file_text_log(u8"12313连接成功\n");
 				do_send_wget_file_name();
 			}
 			else {	
 				OutputDebugString(L"s 12313连接失败");
-				std::cout << "客户端端口 12313 与服务器端口 12313 连接失败\n";
+				emit sign_wget_c_file_text_log(u8"12313连接成功\n");
+
 			}
 		});
 }
@@ -64,8 +65,7 @@ void wget_c_file::do_send_wget_file_name_offset()
 			if (!ec)
 			{
 				OutputDebugString(L"s 断点续传文件内容成功");
-
-				std::cout <<wget_text << "发送成功\n";
+				emit sign_wget_c_file_text_log(u8"发送断点续传文件内容成功\n");
 				do_recive_wget_file();
 			}
 		});
@@ -83,7 +83,7 @@ void wget_c_file::do_recive_wget_file()
 				memcpy(&num,recive_wget_len,sizeof(size_t));	
 				std::memset(recive_wget_len, 0, sizeof(size_t));//清空内存
 				OutputDebugString(L"s 接收长度成功");
-
+				//emit sign_wget_c_file_pro_bar(100,0);
 				recive_wget_name.resize(num);
 				asio::async_read(socket_, asio::buffer(recive_wget_name.data(), num),
 					[this](std::error_code ec, std::size_t)
@@ -98,7 +98,7 @@ void wget_c_file::do_recive_wget_file()
 								auto pos1 = str.find_first_of(',');
 								auto name = str.substr(0, pos1);             
 								std::cout << "name >: " << name << std::endl;  //偏移量
-
+								emit sign_wget_c_file_name(name.c_str());
 								auto  str1 = str.substr(pos1 + 1); //余下的内容
 								auto pos2 = str1.find_first_of('*');
 								offset = str1.substr(0,pos2);
@@ -119,7 +119,11 @@ void wget_c_file::do_recive_wget_file()
 				
 								file.close();
 								std::cout << file_name << "文件接收成功\n";
-			
+								emit sign_wget_c_file_pro_bar(total, total);
+
+								emit sign_wget_c_file_text_log(file_name.data());
+								emit sign_wget_c_file_text_log(u8"文件接收成功\n");
+
 
 							do_recive_wget_file();
 						}

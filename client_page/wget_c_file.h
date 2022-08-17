@@ -1,12 +1,15 @@
 #pragma once
 #include <asio.hpp>
+#include <QString>
 #include "common.h"
 #include "GxJsonUtility.h"
 #include "rapidjson/filereadstream.h"
 #include "down_json.h"
+#include <QObject>
 
-class wget_c_file :public std::enable_shared_from_this<wget_c_file>
+class wget_c_file :public QObject,public std::enable_shared_from_this<wget_c_file>
 {
+	Q_OBJECT
 public:
 	wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_ptr*/);
 
@@ -49,6 +52,14 @@ public:
 
 		return buf;
 	}
+
+
+signals:
+	void sign_wget_c_file_pro_bar(int maxvalue,int value);
+	void sign_wget_c_file_name(QString filename);
+	void sign_wget_c_file_text_log(QString text_log_);
+
+
 private:
 	
 	

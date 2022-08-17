@@ -12,7 +12,7 @@
 #include "ThreadPool.h"
 #include <QtWidgets/QMainWindow>
 #include <QObject>
-
+#include <QVariant>
 using namespace asio::ip;
 
 namespace filestruct {
@@ -80,7 +80,7 @@ namespace filestruct {
 	
 
 }
-
+Q_DECLARE_METATYPE(filestruct::block)
 class client_page;
 class down_json;
 //
@@ -106,7 +106,7 @@ public:
 
 	void send_id_port(const std::string id_port);	//发送成为服务器的id   port
 
-	void down_json_run(filestruct::block Files, std::string& loadip, std::string& loadport, const std::string& comePort);//运行
+	void down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const std::string& comePort);//运行
 
 	std::string open_json_file(const std::string& json_name);  //读json文件
 
@@ -119,6 +119,7 @@ signals:
 	void sign_pro_bar( int maxvalue_ , int value_ );
 	void sign_file_name(QString file_name);
 	void sign_text_log(QString log_);
+	void sign_down_block(QVariant file_names, QString loadip, QString loadport);
 	
 
 public:

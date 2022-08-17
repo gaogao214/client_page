@@ -6,6 +6,8 @@
 #include "ui_client_page.h"
 #include "asio.hpp"
 #include "down_json.h"
+#include "wget_c_file.h"
+#include "down_block.h"
 
 class client_page : public QMainWindow
 {
@@ -23,8 +25,9 @@ public:
 
     
 public slots:
-
+   
     void request_connect();
+    void down_block_file_(QVariant file_names,QString loadip, QString loadport);
     void wget_c_file_();
     void show_progress_bar(int maxvalue_ ,int value_ );
     void show_file_name(/*char file_name[512]*/QString file_name);
@@ -33,11 +36,14 @@ public slots:
 private:
 
     std::shared_ptr<down_json> p_;
+    std::shared_ptr<wget_c_file> m_wget_c_file_;
+    std::shared_ptr<down_block> down_block_;
     asio::io_context io_context;
-    asio::ip::tcp::resolver::results_type endpoints;
+    asio::io_context ios_;
 
-   // std::shared_ptr<std::thread> main_thread_ptr_;
+    std::shared_ptr<std::thread> main_thread_ptr_;
     double dpro;
     std::shared_ptr<std::thread> connect_ptr_;
     QThread* thread_;
+    filestruct::block bck;
 };

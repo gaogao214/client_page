@@ -1,7 +1,7 @@
 #include "client_page.h"
 #include <QtWidgets/QApplication>
 #include <QStyleFactory>
-
+#include <QVariant>
 int main(int argc, char *argv[])
 {
   

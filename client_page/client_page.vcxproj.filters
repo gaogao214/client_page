@@ -75,13 +75,7 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="down_block.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="file_server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wget_c_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="server_wget_c_file.h">
@@ -95,6 +89,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="down_json.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="down_block.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="wget_c_file.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

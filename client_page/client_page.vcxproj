@@ -111,12 +111,12 @@
   <ItemGroup>
     <ClInclude Include="..\..\server_page\server_page\common.h" />
     <ClInclude Include="..\..\server_page\server_page\GxJsonUtility.h" />
-    <ClInclude Include="down_block.h" />
+    <QtMoc Include="down_block.h" />
     <QtMoc Include="down_json.h" />
     <ClInclude Include="file_server.h" />
     <ClInclude Include="server_wget_c_file.h" />
     <ClInclude Include="ThreadPool.h" />
-    <ClInclude Include="wget_c_file.h" />
+    <QtMoc Include="wget_c_file.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\client.ico" />

@@ -1,6 +1,7 @@
 #pragma once
 #include <asio.hpp>
 #include <QObject>
+#include <QVariant>
 #include "common.h"
 #include "GxJsonUtility.h"
 #include "rapidjson/filereadstream.h"
@@ -19,7 +20,7 @@ class down_block:public QObject/*:public enable_shared_from_this<down_block>*/
 {
 	Q_OBJECT
 public:
-	down_block(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files/*, client_page* cli_ptr*/);
+	down_block(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints,/*QVariant var*/ filestruct::block& Files/*, client_page* cli_ptr*/);
 
 	void do_connect( asio::ip::tcp::resolver::results_type& endpoints);
 
@@ -41,7 +42,7 @@ public:
 
 	void Breakpoint_location();    /*记录暂停下载时的  文件名以及偏移量  */
 
-	void save_file(const string& fname);
+	void save_file(const string& fname, const std::string& file_buf);
 
 	void run()
 	{
@@ -52,6 +53,7 @@ public:
 signals:
 
 	void signal_pro_bar(int maxvalue,int value);
+	void signal_file_name_(QString file_name_);
 	
 
 
@@ -59,6 +61,7 @@ public:
 	string id_ip_port_;
 
 private:
+	//filestruct::block blk;//2022.8.16  改
 	filestruct::block& blk;//feige
 	int downloadingIndex=0;//下载完的个数
 	asio::io_context& io_context_;
@@ -80,6 +83,6 @@ private:
 	filestruct::wget_c_file_info wcfi1;  //声明一个结构体
 
 	down_json dj;       //声明一个down_json类
-
+	//QVariant file_names;
 	//client_page* cli_ptr_;
 };

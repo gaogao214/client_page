@@ -3,17 +3,19 @@
 #include <fstream>
 #include "down_block.h"
 #include <string>
+#include <QVariant>
 #include <filesystem>
 #include "file_server.h"
 #include "wget_c_file.h"
 /*下载文件*/
 //down_json* g_down_json = nullptr;
 
-down_block::down_block(asio::io_context& io_context,asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& Files/*, client_page* cli_ptr*/)
+down_block::down_block(asio::io_context& io_context,asio::ip::tcp::resolver::results_type& endpoints,/*QVariant var*/ filestruct::block& Files/*, client_page* cli_ptr*/)
 	:socket_(io_context)
 	,io_context_(io_context)
 	,blk(Files)
 	,dj(io_context,endpoints/*, cli_ptr*/)
+	//,file_names(var)
 	//, cli_ptr_(cli_ptr)
 {
 	do_connect(endpoints);
@@ -57,11 +59,13 @@ void down_block::do_send_filename()//发送需要下载的文件名
 	if (downloadingIndex == blk.files.size())
 	{
 		id_ = to_string(blk.id);
-		client_to_server(downfile_path.port);		
-
+		client_to_server(downfile_path.port);
+		//dj.send_id_port(id_+","+downfile_path.port);
+		return;
 	}
 
 	std::string name = blk.files.at(downloadingIndex++);
+	emit signal_file_name_(QString::fromStdString(name));
 	size_t name_len = name.size();
 	File_name.resize(sizeof(size_t) + name_len);
 	std::memcpy(File_name.data(), &name_len, sizeof(size_t));
@@ -101,7 +105,7 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 
 
 	std::memset(recive_file_len, 0, 4096);//清空内存
-	
+	emit signal_pro_bar(4096,0);
 	socket_.async_read_some(asio::buffer(recive_file_len, 4096), //一次性接收
 		[this,fname, recive_len,no_path_added_name](std::error_code ec, std::size_t )
 		{
@@ -126,8 +130,7 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 						std::cout << "save recive len 2 >: " << filelen << endl;
 
 					}
-					emit signal_pro_bar(filelen, 0);
-
+				
 					std::string file_content(recive_file_len + sizeof(size_t) + 1);
 
 					ofstream id_File(fname, ios::binary);
@@ -146,6 +149,7 @@ void down_block::do_recive_file_text(const string& fname,int recive_len, const s
 					id_File.write(recive_file_len,recive_len);
 
 					id_File.close();
+					emit signal_pro_bar(filelen,file_size+recive_len);
 
 				}
 				

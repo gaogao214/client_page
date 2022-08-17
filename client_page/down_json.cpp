@@ -4,7 +4,7 @@
 #include "down_block.h"
 #include "file_server.h"
 #include <string>
-#include "client_page.h"
+
 
 using namespace std;
 using namespace asio::ip;
@@ -14,11 +14,10 @@ filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
 
 
-down_json::down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_*/)
+down_json::down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 	: io_context(io_context)
 	, socket_(io_context)
 	, pool(2)
-	/*, cli_ptr_(cli_)*/
 {
 	do_connect(endpoints);
 }
@@ -32,7 +31,9 @@ void down_json::do_connect(const asio::ip::tcp::resolver::results_type& endpoint
 			{			
 				OutputDebugString(L"s端口12312 连接成功");
 				emit sign_text_log(u8"端口12312 连接成功");
-				parse_down_jsonfile(down_json_name);			
+				parse_down_jsonfile(down_json_name);	
+				recive_list();//接收list.json文件名字	
+
 			}	
 			else {	
 				OutputDebugString(L"s端口12312 连接失败");
@@ -61,8 +62,6 @@ void  down_json::parse_down_jsonfile(string& name)//打开配置文件，并找�
 {
 	string readbuffer = open_json_file(name);
 	downfile_path.deserializeFromJSON(readbuffer.c_str());
-	recive_list();//接收list.json文件名字	
-
 }
 
 void  down_json::parse_client_list_json(string& name)//打开list_json   json文件  解析json文件
@@ -157,7 +156,7 @@ void down_json::recive_list()//接收list.json文件名字
 			}
 		});
 
-	//auto percent = complete_process_.get_future().get();
+	//auto percent = complete_process_.get_future().get();      //异步标志位
 
 	//progress_bar_show(percent);
 }
@@ -185,11 +184,11 @@ void down_json::isfile_exist(const string file_buf, int buf_len)//判断list.jso
 void down_json::save_file(const std::string& name, const std::string& file_buf)//保存内容
 {
 
-	ofstream save_file(name, ios::out | ios::binary);
+	ofstream save_file_(name, ios::out | ios::binary);
 
-	save_file.write(file_buf.c_str(), strlen(file_buf.c_str()) - len);
+	save_file_.write(file_buf.c_str(), strlen(file_buf.c_str()) - len);
 
-	save_file.close();
+	save_file_.close();
 	cout << name << " 文件保存成功\n";
 }
 
@@ -232,23 +231,30 @@ void down_json::recive_id()//接收id文件的名字
 		});
 }
 
-
-
-void down_json::down_json_run(filestruct::block Files, string& loadip, string& loadport, const string& comePort)//连接下载文件的端口
+void down_json::down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const string& down_id)//连接下载文件的端口
 {
 	try {
-		//cli_ptr_->down_file(Files, loadip, loadport, comePort);
-		asio::io_context ios;
+		QVariant var;
+		var.setValue(Files);
+		
+		/*for (int i = 0; i < bck.files.size(); i++)
+		{
+			cout << bck.files[i] << endl;
+		}*/
+		QString ip = QString::fromStdString(loadip);
+		QString port = QString::fromStdString(loadport);
+		emit sign_down_block(var,ip,port);
+	    /*asio::io_context ios;
 		asio::ip::tcp::resolver resolver_(ios);
 		auto endpoint = resolver_.resolve({ loadip,loadport });
-		down_block db(ios, endpoint, Files/*, cli_ptr_*/);
+		down_block db(ios, endpoint, Files);
 
-		ios.run();
+		ios.run();*/
 	}
 	catch (...)
 	{
 		parse_down_jsonfile(down_json_name);
-		/*while (!*/send_id_port(comePort + "," + downfile_path.port);//)
+		/*while (!*/send_id_port(down_id + "," + downfile_path.port);//)
 		//	continue;
 	}
 }
@@ -290,14 +296,11 @@ void down_json::down_load()//把任务放在线程池里向服务器请求下载
 
 				pool.enqueue(bind(&down_json::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, to_string(iter.blockid)));
 
+
 			}
 		}
 	}
 }
-
-
-
-
 
 void down_json::send_id_port(const string id_port)//发送成为服务器的id ip port 
 {
@@ -305,10 +308,11 @@ void down_json::send_id_port(const string id_port)//发送成为服务器的id i
 	id_port_buf.resize(sizeof(size_t) + id_port_len);//给id_port_buf分配sizeof(size_t) + id_port_len的长度
 	std::memcpy(id_port_buf.data(), &id_port_len, sizeof(size_t));
 	sprintf(&id_port_buf[sizeof(size_t)], "%s", id_port.c_str());//把文件名赋给&Id_IP_Port_buf[10]
-
+	//socket_.async_write_some(asio::buffer(id_port_buf),
 	asio::async_write(socket_, asio::buffer(id_port_buf.data(), id_port_buf.size()),	//一次传输文件名长度和文件名
 		[this, id_port_len, id_port](std::error_code ec, std::size_t)
 		{
+			cout<< ec <<endl;
 			if (!ec)
 			{
 				std::cout << "发送给服务器  id ip port:  " << id_port_buf << std::endl;
