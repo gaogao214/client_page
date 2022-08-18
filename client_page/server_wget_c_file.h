@@ -7,7 +7,7 @@
 #include "GxJsonUtility.h"
 #include "rapidjson/filereadstream.h"
 #include <deque>
-#include "down_json.h"
+
 using namespace std;
 using namespace asio::ip;
 

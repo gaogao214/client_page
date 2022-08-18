@@ -96,6 +96,18 @@ public:
 
 	down_json(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_*/);
 
+	void do_connect(const asio::ip::tcp::resolver::results_type& endpoints);
+
+	void recive_list();							//接收list.json文件名和内容
+
+	void recive_id();							//接收id.json文件名 和内容
+
+	void isfile_exist(const std::string file_buf, int buf_len);//判断文件夹是否存在
+
+	void down_load();							//开一个线程池
+
+	void save_file(const std::string& name, const std::string& file_buf);//保存文件
+
 	void parse_down_jsonfile(std::string& name);			//打开down.json配置文件
 
 	void parse_client_list_json(std::string& name);		//打开list.json配置文件
@@ -136,23 +148,8 @@ public:
 
 	std::promise<float> complete_process_;
 
-	void run()
-	{
-		io_context.run();
-	}
-
 private:
-	void do_connect(const asio::ip::tcp::resolver::results_type& endpoints);
-	
-	void recive_list();							//接收list.json文件名和内容
-	
-	void recive_id();							//接收id.json文件名 和内容
 
-	void isfile_exist( const std::string file_buf,int buf_len);//判断文件夹是否存在
-	
-	void down_load();							//开一个线程池
-
-	void save_file(const std::string& name , const std::string& file_buf);//保存文件
 
 	asio::io_context& io_context;
 	asio::ip::tcp::socket socket_;

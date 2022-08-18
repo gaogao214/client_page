@@ -94,9 +94,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="down_json.cpp" />
+    <ClCompile Include="down_block_client.cpp" />
+    <ClCompile Include="down_json_client.cpp" />
+    <ClCompile Include="io_context_pool.cpp" />
     <ClCompile Include="server_wget_c_file.cpp" />
     <ClCompile Include="wget_c_file.cpp" />
+    <ClCompile Include="wget_c_file_client.cpp" />
     <QtRcc Include="client_page.qrc" />
     <QtUic Include="client_page.ui" />
     <QtMoc Include="client_page.h" />
@@ -111,9 +114,13 @@
   <ItemGroup>
     <ClInclude Include="..\..\server_page\server_page\common.h" />
     <ClInclude Include="..\..\server_page\server_page\GxJsonUtility.h" />
+    <ClInclude Include="wget_c_file_client.h" />
     <QtMoc Include="down_block.h" />
-    <QtMoc Include="down_json.h" />
+    <ClInclude Include="basic_client.h" />
+    <ClInclude Include="down_block_client.h" />
+    <ClInclude Include="down_json_client.h" />
     <ClInclude Include="file_server.h" />
+    <ClInclude Include="io_context_pool.h" />
     <ClInclude Include="server_wget_c_file.h" />
     <ClInclude Include="ThreadPool.h" />
     <QtMoc Include="wget_c_file.h" />

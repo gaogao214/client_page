@@ -12,7 +12,7 @@ wget_c_file::wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::
 void wget_c_file::do_connect(asio::ip::tcp::resolver::results_type& endpoints)
 {
 	asio::async_connect(socket_, endpoints,
-		[this](std::error_code ec, tcp::endpoint)
+		[this](std::error_code ec, asio::ip::tcp::endpoint)
 		{
 			if (!ec)
 			{

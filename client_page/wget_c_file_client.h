@@ -1,32 +1,21 @@
 #pragma once
-#include <asio.hpp>
-#include <QString>
-#include "common.h"
-#include "GxJsonUtility.h"
-#include "rapidjson/filereadstream.h"
-#include <QObject>
+#include "asio.hpp"
+#include "basic_client.h"
 #include "down_json_client.h"
-
-class wget_c_file :public QObject,public std::enable_shared_from_this<wget_c_file>
+#include <fstream>
+class wget_c_file_client : public basic_client
 {
-	Q_OBJECT
 public:
-	wget_c_file(asio::io_context& io_context, asio::ip::tcp::resolver::results_type& endpoints/*, client_page* cli_ptr*/);
-
-	void do_connect(asio::ip::tcp::resolver::results_type& endpoints);
-
 	void do_send_wget_file_name();//发送名字
-
 
 	void do_send_wget_file_name_offset();//发送偏移长度
 
-
 	void do_recive_wget_file();
-	void run()
-	{
-		ios_.run();
-	}
 
+protected:
+	virtual int read_handle(std::size_t bytes_transferred) override;
+
+private:
 	inline size_t send_file_len(const std::string& filename)
 	{
 		std::ifstream infile(filename.c_str());
@@ -53,29 +42,15 @@ public:
 		return buf;
 	}
 
-
-signals:
-	void sign_wget_c_file_pro_bar(int maxvalue,int value);
-	void sign_wget_c_file_name(QString filename);
-	void sign_wget_c_file_text_log(QString text_log_);
-
-
 private:
-	
-	
 	asio::ip::tcp::socket socket_;
-	down_json_client dj;  //给 down_json 实例化
-	asio::io_context ios_;
 
-	std::string wget_text;						//发送断点续传文件的内容
 	std::string wget_c_name = "wget_c_file.json";
 	std::string send_name;						//发送断点续传的名字
+	std::string wget_text;						//发送断点续传文件的内容
 	std::string recive_wget_name;               //接收断点续传的文件名 偏移量 余下的长度 内容
-	char recive_wget_len[sizeof(size_t)];  //接收断点时的文件名长度
+
 
 	
-	std::string offset;
-	
-	std::string file_name;
-	size_t num=0;
 };
+

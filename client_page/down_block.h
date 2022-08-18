@@ -5,7 +5,6 @@
 #include "common.h"
 #include "GxJsonUtility.h"
 #include "rapidjson/filereadstream.h"
-#include "down_json.h"
 
 
 using namespace asio::ip;
@@ -42,7 +41,7 @@ public:
 
 	void Breakpoint_location();    /*记录暂停下载时的  文件名以及偏移量  */
 
-	void save_file(const string& fname, const std::string& file_buf);
+	//void save_file(const string& fname, const std::string& file_buf);
 
 	void run()
 	{
