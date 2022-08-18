@@ -6,6 +6,13 @@
 class wget_c_file_client : public basic_client
 {
 public:
+	wget_c_file_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
+		: basic_client(io_context, endpoints)
+	{
+
+	}
+
+public:
 	void do_send_wget_file_name();//发送名字
 
 	void do_send_wget_file_name_offset();//发送偏移长度
@@ -43,14 +50,9 @@ private:
 	}
 
 private:
-	asio::ip::tcp::socket socket_;
-
 	std::string wget_c_name = "wget_c_file.json";
 	std::string send_name;						//发送断点续传的名字
 	std::string wget_text;						//发送断点续传文件的内容
 	std::string recive_wget_name;               //接收断点续传的文件名 偏移量 余下的长度 内容
-
-
-	
 };
 

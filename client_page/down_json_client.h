@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include "ThreadPool.h"
+#include "file_struct.h"
 
 extern  filestruct::profile downfile_path;      //配置文件
 extern  filestruct::files_info files_inclient;	//解析客户端本地的json文本

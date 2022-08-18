@@ -49,13 +49,7 @@
     <ClCompile Include="..\..\server_page\server_page\rapidjson_serialize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="down_block.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="file_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wget_c_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="server_wget_c_file.cpp">
@@ -105,18 +99,13 @@
     <ClInclude Include="wget_c_file_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="file_struct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\client.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="down_block.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="wget_c_file.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
 </Project>

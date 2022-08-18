@@ -1,5 +1,7 @@
 #include "server_wget_c_file.h"
 
+extern  filestruct::profile downfile_path;      //ÅäÖÃÎÄ¼ş
+
 wget_load_file::wget_load_file(asio::ip::tcp::socket socket)
 	:socket_(std::move(socket))
 {

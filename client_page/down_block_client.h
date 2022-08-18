@@ -6,6 +6,14 @@
 class down_block_client : public basic_client
 {
 public:
+	down_block_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& block)
+		: basic_client(io_context, endpoints)
+		, blk(block)
+	{
+
+	}
+
+public:
 
 	void send_filename();
 
@@ -40,7 +48,7 @@ private:
 
 	filestruct::wget_c_file_info wcfi1;  //声明一个结构体
 
-	down_json_client dj;       //声明一个down_json类
+	//down_json_client dj;       //声明一个down_json类
 
 	int downloadingIndex = 0;//下载完的个数
 	std::string file_name;

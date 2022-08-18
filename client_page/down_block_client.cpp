@@ -41,7 +41,7 @@ void down_block_client::recive_file_text(const std::string& fname, int recive_le
 int down_block_client::read_handle(std::size_t bytes_transferred)
 {
 
-
+	return 0;
 }
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)//判断文件夹是否存在，不存在则创建文件夹
@@ -77,7 +77,7 @@ void down_block_client::save_location(const string& name, const string& no_path_
 	wcf.offset = file_size;
 
 	wcfi1.wget_c_file_list.push_back(wcf);
-	save_wget_c_file_json(wcfi1, dj.wget_c_file1);
+	save_wget_c_file_json(wcfi1, "wget_c_file1.json");
 
 }
 
@@ -100,7 +100,7 @@ void down_block_client::Breakpoint_location()
 			wcfi1.wget_c_file_list.push_back(wcf);
 		}
 	}
-	save_wget_c_file_json(wcfi1, dj.wget_c_file);
+	save_wget_c_file_json(wcfi1, "wget_c_file.json");
 
 }
 

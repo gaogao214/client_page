@@ -4,11 +4,12 @@
 #include <QString>
 #include "ui_client_page.h"
 #include "asio.hpp"
-#include "wget_c_file.h"
-#include "down_block.h"
 
 
 #include "io_context_pool.h"
+#include "file_struct.h"
+#include "down_block_client.h"
+#include "wget_c_file_client.h"
 
 class client_page : public QMainWindow
 {
@@ -40,9 +41,9 @@ public slots:
     void show_text_log(QString log_);
 
 private:
-    std::shared_ptr<down_json> down_json_ptr_;
-    std::shared_ptr<wget_c_file> m_wget_c_file_;
-    std::shared_ptr<down_block> down_block_;
+    std::shared_ptr<down_json_client> down_json_ptr_;
+    std::shared_ptr<wget_c_file_client> m_wget_c_file_;
+    std::shared_ptr<down_block_client> down_block_ptr_;
 
     std::shared_ptr<std::thread> main_thread_ptr_;
     double dpro;

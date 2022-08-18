@@ -8,6 +8,9 @@
 #include "rapidjson/filereadstream.h"
 #include <deque>
 
+
+#include "file_struct.h"
+
 using namespace std;
 using namespace asio::ip;
 
