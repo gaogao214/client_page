@@ -13,35 +13,24 @@ void down_block_client::send_filename()
 		return;
 	}
 
-	std::string name = blk.files.at(downloadingIndex++);
+	 name = blk.files.at(downloadingIndex++);
 	//emit signal_file_name_(QString::fromStdString(name));
 	size_t name_len = name.size();
 	file_name.resize(sizeof(size_t) + name_len);
 	std::memcpy(file_name.data(), &name_len, sizeof(size_t));
 	sprintf(&file_name[sizeof(size_t)], "%s", name.data());
 
-	this->async_write(file_name, [this,name](std::error_code ec, std::size_t)
+	this->async_write(file_name, [&, this](std::error_code ec, std::size_t)
 	{
 			if (!ec)
 			{
-				std::cout << "\n¿Í»§¶ËÇëÇóÏÂÔØ  " << name << "ÎÄ¼þ\n";
+			
 				does_the_folder_exist(name);
+				
 			}
 
 	});
 
-}
-
-void down_block_client::recive_file_text(const std::string& fname, int recive_len, const std::string& no_path_added_name)
-{
-
-
-}
-
-int down_block_client::read_handle(std::size_t bytes_transferred)
-{
-
-	return 0;
 }
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅÐ¶ÏÎÄ¼þ¼ÐÊÇ·ñ´æÔÚ£¬²»´æÔÚÔò´´½¨ÎÄ¼þ¼Ð
@@ -57,8 +46,29 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅÐ¶
 		std::filesystem::create_directories(file_path.substr(0, found), ec);
 		std::cout << "ÎÄ¼þ¼Ð´´½¨³É¹¦\n";
 	}
-	recive_file_text(file_path, 4096, list_name);
+	//recive_file_text(file_path, 4096, list_name);
 }
+
+void down_block_client::recive_file_text(size_t recive_len)
+{
+	
+	std::ofstream file(file_path.data(), std::ios::out | std::ios::binary | std::ios::app);
+	//file.seekp(offset_len, std::ios::beg);
+
+	file.write(buffer_.data(), recive_len);
+
+	file.close();
+	send_filename();
+}
+
+int down_block_client::read_handle(std::size_t bytes_transferred)
+{
+	recive_file_text(bytes_transferred);
+
+	return 0;
+}
+
+
 
 //¶Ï¿ªÔÙÁ¬½ÓÊ±     wcfi Çå¿Õ  ¶Ï¿ªÁ¬½ÓÊ±£¬±£´æµ½Ò»¸öÎÄ¼þÖÐ £¬Á¬½ÓÊ±£¬ÏÈ¶ÁÕâ¸öÎÄ¼þ   ÔÙ°ÑÕâ¸ö±£´æµ½±ðµÄÎÄ¼þÖÐ
 //±£´æµ½wget_c_fileÎÄ¼þÖÐ ÏÂÔØÍê³ÉµÄÎÄ¼þÃû  ºÍÆ«ÒÆÁ¿

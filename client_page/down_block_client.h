@@ -3,27 +3,29 @@
 #include "basic_client.h"
 
 #include "down_json_client.h"
+
+
 class down_block_client : public basic_client
 {
 public:
-	down_block_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, filestruct::block& block)
+	down_block_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, const filestruct::block& block = {})
 		: basic_client(io_context, endpoints)
 		, blk(block)
 	{
-
+		//send_filename();
 	}
 
 public:
 
 	void send_filename();
 
-	void recive_file_text(const std::string& fname, int recive_len, const std::string& no_path_added_name);
+	void recive_file_text(size_t recive_len);
 
 protected:
 
 	virtual int read_handle(std::size_t bytes_transferred) override;
 
-private:
+public:
 
 	void does_the_folder_exist(const std::string& list_name);//判断文件夹是否存在，不存在则创建文件夹
 
@@ -41,7 +43,7 @@ private:
 
 
 private:
-	filestruct::block& blk;//feige
+	filestruct::block blk;//feige
 	filestruct::wget_c_file wcf;
 
 	filestruct::wget_c_file_info wcfi;  //声明一个结构体
@@ -53,7 +55,7 @@ private:
 	int downloadingIndex = 0;//下载完的个数
 	std::string file_name;
 	std::string file_path;   //路径+文件名
-
-
+	std::string name;
+	//std::array<char, 5> arr{ 'a','a','a','a','a' };
 };
 

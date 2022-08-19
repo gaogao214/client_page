@@ -23,7 +23,7 @@ client_page::client_page(QWidget* parent)
 
 client_page::~client_page()
 {
-
+	stop();
 }
 
 void client_page::request_connect()
@@ -33,63 +33,70 @@ void client_page::request_connect()
 
 
 	down_json_ptr_ = std::make_shared<down_json_client>(io_pool_.get_io_context(), endpoints);
-
+	
 	qRegisterMetaType<filestruct::block>("filestruct::block");
 	qRegisterMetaType<std::string>("std::string");
 	qRegisterMetaType<QTextCursor>("QTextCursor");
-	//QMetaObject::Connection connecthanndle_pro_bar = connect(p_.get(), SIGNAL(sign_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
-	//if (connecthanndle_pro_bar)
-	//{
-	//	OutputDebugString(L"pro bar 信号与槽函数关联成功\n");
-	//	ui.text_log->insertPlainText(u8"pro_bar 槽函数关联成功\n");
+	QMetaObject::Connection connecthanndle_pro_bar = connect(down_json_ptr_.get(), SIGNAL(sign_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
+	if (connecthanndle_pro_bar)
+	{
+		OutputDebugString(L"pro bar 信号与槽函数关联成功\n");
+		ui.text_log->insertPlainText(u8"pro_bar 槽函数关联成功\n");
 
-	//}
-	//else
-	//{
-	//	OutputDebugString(L"pro bar 关联失败\n");
-	//}
-	//QMetaObject::Connection connecthanndle_name = connect(p_.get(), SIGNAL(sign_file_name(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
-	//if (connecthanndle_name)
-	//{
-	//	OutputDebugString(L"name 信号与槽函数关联成功\n");
-	//	ui.text_log->insertPlainText(u8"name 槽函数关联成功\n");
+	}
+	else
+	{
+		OutputDebugString(L"pro bar 关联失败\n");
+	}
+	QMetaObject::Connection connecthanndle_name = connect(down_json_ptr_.get(), SIGNAL(sign_file_name(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
+	if (connecthanndle_name)
+	{
+		OutputDebugString(L"name 信号与槽函数关联成功\n");
+		ui.text_log->insertPlainText(u8"name 槽函数关联成功\n");
 
-	//}
-	//else
-	//{
-	//	OutputDebugString(L"name 关联失败\n");
-	//}
-	//QMetaObject::Connection connecthanndle_log = connect(p_.get(), SIGNAL(sign_text_log(QString)), this, SLOT(show_text_log(QString)), Qt::QueuedConnection);
-	//if (connecthanndle_log)
-	//{
-	//	OutputDebugString(L"text 信号与槽函数关联成功\n");
-	//	ui.text_log->insertPlainText(u8"text_log 槽函数关联成功\n");
+	}
+	else
+	{
+		OutputDebugString(L"name 关联失败\n");
+	}
+	QMetaObject::Connection connecthanndle_log = connect(down_json_ptr_.get(), SIGNAL(sign_text_log(QString)), this, SLOT(show_text_log(QString)), Qt::QueuedConnection);
+	if (connecthanndle_log)
+	{
+		OutputDebugString(L"text 信号与槽函数关联成功\n");
+		ui.text_log->insertPlainText(u8"text_log 槽函数关联成功\n");
 
-	//}
-	//else
-	//{
-	//	OutputDebugString(L"text_log 关联失败\n");
-	//}
+	}
+	else
+	{
+		OutputDebugString(L"text_log 关联失败\n");
+	}
 
-	//QMetaObject::Connection connect_block_ = connect(p_.get(), SIGNAL(sign_down_block(QVariant, QString, QString)), this,
-	//	SLOT(down_block_file_(QVariant, QString, QString)), Qt::QueuedConnection);
-	//if (connect_block_)
-	//{
-	//	ui.text_log->insertPlainText(u8"block 关联成功\n");
-	//}
-
-
+	QMetaObject::Connection connect_block_ = connect(down_json_ptr_.get(), SIGNAL(sign_down_block(QVariant,QString, QString)), this,
+		SLOT(down_block_file_(QVariant,QString, QString)), Qt::DirectConnection);
+	if (connect_block_)
+	{
+		ui.text_log->insertPlainText(u8"block 关联成功\n");
+	}
+	QMetaObject::Connection connect_connect_ = connect(down_json_ptr_.get(), SIGNAL(signal_connect()), this,
+		SLOT(show_connect()), Qt::QueuedConnection);
+	if (connect_connect_)
+	{
+		ui.text_log->insertPlainText(u8"connect 关联成功\n");
+	}
 }
 
 
-void client_page::down_block_file_(QVariant file_names, QString loadip, QString loadport)
+void client_page::down_block_file_(QVariant file_names,QString loadip, QString loadport)
 {
 	asio::ip::tcp::resolver resolver(io_pool_.get_io_context());
 
 	auto endpoints = resolver.resolve("127.0.0.1", "12314");
-	//bck = file_names.value<filestruct::block>();
+	bck = file_names.value<filestruct::block>();
 
 	down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
+
+	down_block_ptr_->send_filename();
+
 	//QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
 	//if (connecthanndle_pro_bar)
 	//{
@@ -160,4 +167,9 @@ void client_page::show_text_log(QString log_)
 {
 	ui.text_log->insertPlainText(log_);
 
+}
+
+void client_page::show_connect()
+{
+	ui.text_log->insertPlainText(u8"连接成功");
 }

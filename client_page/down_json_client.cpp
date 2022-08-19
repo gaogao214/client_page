@@ -1,72 +1,82 @@
 #include "down_json_client.h"
-//#include "down_block.h"
+#include "down_block_client.h"
 //#include "file_server.h"
+
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
 
-
-void down_json_client::receive_list(std::size_t length)
+void down_json_client::receive_buffer(std::size_t length)
 {
-	OutputDebugString(L"list.json文件接收成功");
+	std::string str(buffer_.data(),length);
+	std::string buf = str.substr(1);
+	auto pos = buf.find_first_of("*");
+	auto name = buf.substr(0, pos);
 
-	auto pos = list_name.find_first_of("*");
-	auto name = list_name.substr(0, pos);
+	emit sign_file_name(name.data());
 
-	//emit sign_file_name(name.data());
+	auto text = buf.substr(pos + 1);
 
-	auto text = list_name.substr(pos + 1);
-
-	//只注释了这一行156
-	//complete_process_.set_value(bai);
-
-	//emit sign_pro_bar(list_name_len, list_name_len);
-
-	parse_server_list_json(text);
-	isfile_exist(text, text.size());//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
-	//recive_id();//接收id的名字
-}
-
-void down_json_client::receive_id(std::size_t length)
-{
-
-	OutputDebugString(L"id.json文件接收成功");
-
-	auto pos = id_name_text.find_first_of("*");
-	auto name = id_name_text.substr(0, pos);
-
-	//emit sign_file_name(name.data());
-
-	auto text = id_name_text.substr(pos + 1);
-
-	//emit sign_pro_bar(id_name_len, id_name_len);
-
-	save_file(name, text);//保存内容
-	parse_block_json(text);
-	down_load();//把任务放在线程池里向服务器请求下载
-
-}
-
-int down_json_client::read_handle(std::size_t bytes_transferred)
-{
+	emit sign_pro_bar(length, length);
 	char flag = buffer_[0];
-
 	switch (flag)
 	{
-	case 0:
+	case '0':
 	{
 		//处理所有的buffer_
-		receive_list(bytes_transferred);
+		parse_server_list_json(text);
+		isfile_exist(text, text.size());//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
+
 	}
 	break;
-	case 1:
-		receive_id(bytes_transferred);
+	case '1':
+		save_file(name, text);//保存内容
+		parse_block_json(text);
+		down_load();//把任务放在线程池里向服务器请求下载
 
 		break;
 	default:
 		break;
 	}
+
+	
+	
+}
+
+int down_json_client::read_handle(std::size_t bytes_transferred)
+{
+
+	receive_buffer(bytes_transferred);
+
+
+	//if (func_)
+	//	func_();
+
 	return 0;
 }
+
+
+void  down_json_client::parse_server_list_json(std::string text_json)//打开list_json   json文件  解析json文件
+{
+	files_inserver.deserializeFromJSON(text_json.c_str());
+}
+
+void  down_json_client::parse_down_jsonfile(std::string name)//打开配置文件，并找到配置文件中的路径,查看路径下的文件或文件名   解析json文件
+{
+	std::string readbuffer = open_json_file("down.json");
+	downfile_path.deserializeFromJSON(readbuffer.c_str());
+}
+
+void  down_json_client::parse_block_json(std::string text_json)//打开list_json   json文件  解析json文件
+{
+	blks_.deserializeFromJSON(text_json.c_str());
+}
+
+void down_json_client::parse_client_list_json(std::string name)//打开list_json   json文件  解析json文件
+{
+	std::string readbuffer = open_json_file(name);
+	files_inclient.deserializeFromJSON(readbuffer.c_str());
+}
+
 void down_json_client::isfile_exist(const std::string file_buf, int buf_len)//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 {
 
@@ -118,22 +128,27 @@ void down_json_client::save_file(const std::string& name, const std::string& fil
 void down_json_client::down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const std::string& down_id)//连接下载文件的端口
 {
 	try {
+		
 		//QVariant var;
 		//var.setValue(Files);
-
-		///*for (int i = 0; i < bck.files.size(); i++)
-		//{
-		//	cout << bck.files[i] << endl;
-		//}*/
+		//
 		//QString ip = QString::fromStdString(loadip);
 		//QString port = QString::fromStdString(loadport);
-		//emit sign_down_block(var, ip, port);
-		/*asio::io_context ios;
-		asio::ip::tcp::resolver resolver_(ios);
-		auto endpoint = resolver_.resolve({ loadip,loadport });
-		down_block db(ios, endpoint, Files);
 
-		ios.run();*/
+		//emit sign_down_block(var,ip, port);
+
+		asio::ip::tcp::resolver resolver(get_io_context());
+
+		auto endpoints = resolver.resolve(loadip, loadport);
+
+		///*bck = file_names.value<filestruct::block>();
+		//*/
+		auto down_block_ptr_ = std::make_shared<down_block_client>(get_io_context(), endpoints, Files);
+
+		down_block_list_.push_back(down_block_ptr_);
+
+		
+		down_block_ptr_->send_filename();
 	}
 	catch (...)
 	{
@@ -146,13 +161,13 @@ void down_json_client::down_json_run(filestruct::block Files, std::string loadip
 
 void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 {
-	
 	for (auto i : files_inserver.file_list)//每个id(id:1 id:2)的总数量
 	{
 		id_index[i.blockid] += 1;
 	}
 
 		
+	//auto iter = *files_inserver.file_list.begin();
 	for (auto& iter : files_inserver.file_list)
 	{
 		//在本地list.json文本里找到和服务端相同的名字
@@ -181,10 +196,15 @@ void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 
 				pool.enqueue(bind(&down_json_client::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid)));
 
-
+				//down_json_run(blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid));
 			}
 		}
 	}
+
+	/*QString ip = QString::fromStdString("");
+	QString port = QString::fromStdString("");
+
+	emit sign_down_block(ip, port);*/
 }
 
 void down_json_client::send_id_port(const std::string id_port)//发送成为服务器的id ip port 
@@ -193,16 +213,6 @@ void down_json_client::send_id_port(const std::string id_port)//发送成为服务器的
 	id_port_buf.resize(sizeof(size_t) + id_port_len);//给id_port_buf分配sizeof(size_t) + id_port_len的长度
 	std::memcpy(id_port_buf.data(), &id_port_len, sizeof(size_t));
 	sprintf(&id_port_buf[sizeof(size_t)], "%s", id_port.c_str());//把文件名赋给&Id_IP_Port_buf[10]
-	//socket_.async_write_some(asio::buffer(id_port_buf),
-	//asio::async_write(socket_, asio::buffer(id_port_buf.data(), id_port_buf.size()),	//一次传输文件名长度和文件名
-	//	[this, id_port_len, id_port](std::error_code ec, std::size_t)
-	//	{
-	//		cout << ec << endl;
-	//		if (!ec)
-	//		{
-	//			std::cout << "发送给服务器  id ip port:  " << id_port_buf << std::endl;
-	//		}
-	//	});
 
 	this->async_write(id_port_buf, [this, id_port_len, id_port](std::error_code ec, std::size_t)
 		{

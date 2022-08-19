@@ -8,7 +8,7 @@ io_context_pool::io_context_pool(std::size_t pool_size)
 		throw std::runtime_error("io_context_pool size is 0");
 	}
 
-	for (std::size_t i = 0; i < pool_size; ++i)
+	for (std::size_t i = 0; i < pool_size; i++)
 	{
 		io_context_ptr io_context(new asio::io_context);
 		io_contexts_.push_back(io_context);
@@ -20,24 +20,24 @@ io_context_pool::io_context_pool(std::size_t pool_size)
 void io_context_pool::run()
 {
 	std::vector<std::shared_ptr<std::thread>> threads;
-	for (std::size_t i = 0; i < io_contexts_.size(); ++i)
+
+	for (auto& iter : io_contexts_)
 	{
-		std::shared_ptr<std::thread> thread(new std::thread([&, this] {io_contexts_[i]->run(); }));
+		std::shared_ptr<std::thread> thread(new std::thread([&] { iter->run(); }));
 		threads.push_back(thread);
 	}
 
-	for (std::size_t i = 0; i < threads.size(); ++i)
+	for (auto& iter : threads)
 	{
-		threads[i]->join();
+		iter->join();
 	}
 }
 
 void io_context_pool::stop()
 {
-
-	for (std::size_t i = 0; i < io_contexts_.size(); ++i)
+	for (auto& iter : io_contexts_)
 	{
-		io_contexts_[i]->stop();
+		iter->stop();
 	}
 }
 

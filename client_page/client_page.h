@@ -11,6 +11,7 @@
 #include "down_block_client.h"
 #include "wget_c_file_client.h"
 
+
 class client_page : public QMainWindow
 {
     Q_OBJECT
@@ -39,13 +40,12 @@ public slots:
     void show_progress_bar(int maxvalue_ ,int value_ );
     void show_file_name(/*char file_name[512]*/QString file_name);
     void show_text_log(QString log_);
-
+    void show_connect();
 private:
     std::shared_ptr<down_json_client> down_json_ptr_;
     std::shared_ptr<wget_c_file_client> m_wget_c_file_;
     std::shared_ptr<down_block_client> down_block_ptr_;
 
-    std::shared_ptr<std::thread> main_thread_ptr_;
     double dpro;
 
     filestruct::block bck;
@@ -60,9 +60,17 @@ public:
             }));
     }
 
+    void stop()
+    {
+        this->io_pool_.stop();
 
-private:
+        pool_thread_ptr_->join();
+    }
+
+
+public:
     io_context_pool io_pool_;
 
+private:
     std::shared_ptr<std::thread> pool_thread_ptr_;
 };

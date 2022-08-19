@@ -1,9 +1,12 @@
 #pragma once
 #include <array>
 #include "asio.hpp"
+#include <QObject>
+#include <sstream>
 
-class basic_client
+class basic_client:public QObject
 {
+	Q_OBJECT
 public:
 	explicit basic_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		:io_context_(io_context)
@@ -13,8 +16,8 @@ public:
 	}
 
 public:
-	template<typename _Handle>
-	void async_write(std::array<char, 1024> buffer, _Handle&& handle)
+	template<std::size_t I, typename _Handle>
+	void async_write(std::array<char, I> buffer, _Handle&& handle)
 	{
 		asio::async_write(socket_, asio::buffer(buffer), std::forward<_Handle>(handle));
 	}
@@ -23,6 +26,7 @@ public:
 	void async_write(const std::string& buffer, _Handle&& handle)
 	{
 		asio::async_write(socket_, asio::buffer(buffer), std::forward<_Handle>(handle));
+		//socket_.async_write_some(asio::buffer(buffer), std::forward<_Handle>(handle));
 	}
 
 	void close()
@@ -30,8 +34,16 @@ public:
 		socket_.close();
 	}
 
+	auto& get_io_context()
+	{
+		return io_context_;
+	}
+
 protected:
 	virtual int read_handle(std::size_t) = 0;
+
+signals:
+	void signal_connect();
 
 private:
 	void do_connect(asio::ip::tcp::resolver::results_type endpoints)
@@ -42,38 +54,61 @@ private:
 				if (ec)
 					return;
 
+				emit signal_connect();
 				do_read_header();
 			});
 	}
 
 	void do_read_header()
 	{
-		asio::async_read(socket_, asio::buffer(buffer_,sizeof(size_t)),
+		//buffer_.fill(0);
+		//std::memset(buffer_.data(), 0, 4096);//清空内存
+
+		asio::async_read(socket_, asio::buffer(buffer_, sizeof(size_t)),
 			[this](std::error_code ec, std::size_t)
 			{
-				auto receive_length = atoi(buffer_.data());
+				if (ec)
+					return;
+				
+				std::size_t receive_length{};
+
+				std::memcpy(&receive_length, &buffer_, sizeof(std::size_t));
+				
 
 				do_read_body(receive_length);
+				
 			});
+
 	}
 
 	void do_read_body(std::size_t length)
 	{
+		//buffer_.fill(0);
+		//std::memset(buffer_.data(), 0, 4096);//清空内存
+
 		asio::async_read(socket_, asio::buffer(buffer_, length), 
 			[this](std::error_code ec, std::size_t bytes_transferred)
 			{
-				read_handle(bytes_transferred);
+				if (ec)
+					return;
 
+				read_handle(bytes_transferred);
+				buffer_.fill(0);
+
+				//std::memset(buffer_.data(), 0, 4096);//清空内存
 				do_read_header();
 			});
 	}
 
 
 protected:
-	std::array<char,1024> buffer_;
+	std::array<char,4096> buffer_;
+	/*char buffer_[4096];*/
 
 private:
 	asio::io_context& io_context_;
 	asio::ip::tcp::socket socket_;
+	std::size_t file_size=0;
+
 };
 
