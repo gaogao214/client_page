@@ -28,8 +28,6 @@ void down_block_client::send_filename()
 				does_the_folder_exist(name);
 				
 			}
-			
-
 	});
 
 	send_filename();

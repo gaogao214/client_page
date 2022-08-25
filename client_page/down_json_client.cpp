@@ -30,7 +30,7 @@ void down_json_client::receive_buffer(std::size_t length)
 	}
 	break;
 	case '1':
-		//parse_client_list_json("list.json");
+		
 		save_file(name, text);//保存内容
 		parse_block_json(text);
 		down_load();//把任务放在线程池里向服务器请求下载
@@ -131,7 +131,7 @@ void down_json_client::save_file(const std::string& name, const std::string& fil
 	save_file_.write(file_buf.c_str(), strlen(file_buf.c_str()) - len);
 
 	save_file_.close();
-	std::cout << name << " 文件保存成功\n";
+
 }
 
 void down_json_client::down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const std::string& down_id)//连接下载文件的端口
