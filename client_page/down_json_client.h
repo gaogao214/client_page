@@ -41,18 +41,19 @@ public:
 
 protected:
 	virtual int read_handle(std::size_t bytes_transferred) override;
+	virtual int read_error() override;
 
 private:
 	void  parse_server_list_json(std::string text_json);//打开list_json   json文件  解析json文件
 	
-
 	void  parse_down_jsonfile(std::string name);//打开配置文件，并找到配置文件中的路径,查看路径下的文件或文件名   解析json文件
-
 
 	void  parse_block_json(std::string text_json);//打开list_json   json文件  解析json文件
 
-
 	void parse_client_list_json(std::string name);//打开list_json   json文件  解析json文件
+
+//	filestruct::wget_c_file_info parse_wget_c_file_json(const std::string& name);//打开wget_c_file.json 断点续传配置文件
+
 	
 	void isfile_exist(const std::string file_buf, int buf_len);//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 

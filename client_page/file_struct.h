@@ -3,7 +3,7 @@
 #include "rapidjson/filereadstream.h"
 #include "GxJsonUtility.h"
 #include <QVariant>
-
+#include <fstream>
 
 namespace filestruct {
 	struct list_json {                 //list.json

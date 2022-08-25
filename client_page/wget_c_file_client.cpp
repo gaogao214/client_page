@@ -43,43 +43,64 @@ void wget_c_file_client::do_send_wget_file_name_offset()
 	 
 }
 
-void wget_c_file_client::do_recive_wget_file()
+void wget_c_file_client::do_recive_wget_file(std::size_t len)
 {
-	auto pos = recive_wget_name.find_first_of("!");
-	auto remaining_total = recive_wget_name.substr(0, pos);		//接收的字符串总长度
-	std::cout << "total >:" << remaining_total << std::endl;
+	std::string recive_wget_buf(buffer_.data(),len);
 
-	auto str = recive_wget_name.substr(pos + 1);	//断点时 文件名 偏移量  以及余下的内容
-	auto pos1 = str.find_first_of(',');
-	auto name = str.substr(0, pos1);
-	std::cout << "name >: " << name << std::endl;  //偏移量
-	//emit sign_wget_c_file_name(name.c_str());
-	auto  str1 = str.substr(pos1 + 1); //余下的内容
-	auto pos2 = str1.find_first_of('*');
-	auto offset = str1.substr(0, pos2);
-	wget_text = str1.substr(pos2 + 1);
+	std::string name = recive_wget_buf.substr(0,8);
+	std::string total_num = recive_wget_buf.substr(8, 8);
+	std::string offset_ = recive_wget_buf.substr(16, 8);
+	std::string text = recive_wget_buf.substr(24);
 
-	OutputDebugString(L"s 文件接收成功");
+	//OutputDebugString(L"s 文件接收成功");
+
+	std::size_t tatal_num_{};
+	std::size_t offset_num_{};
+	std::memcpy(&tatal_num_,total_num.data(),sizeof(size_t));   //总序号
+	std::memcpy(&offset_num_, offset_.data(), sizeof(size_t));   //总序号
 
 
+	name_num_map_.emplace(name, tatal_num_);
 
 	std::string file_name = downfile_path.path + "\\" + name;
 
-	int offset_len = atoi(offset.data());
-	int total = atoi(remaining_total.data());
+
 	std::ofstream file(file_name.data(), std::ios::out | std::ios::binary | std::ios::app);
-	file.seekp(offset_len, std::ios::beg);
+	
+	for (auto iter = name_num_map_.begin(); iter != name_num_map_.end(); iter++)
+	{
+		if (iter->first == name)
+		{
+			std::size_t dowm_size = len - 8 - 8 - 8;
 
-	file.write(wget_text.c_str(), total);
+			file.seekp(offset_num_, std::ios::beg);
 
-	file.close();
+			file.write(text.c_str(), dowm_size);
+			++count;
+
+			if (iter->second == count)
+			{
+				file.close();
+
+			}
+		}
+
+	}
+	
+
 	std::cout << file_name << "文件接收成功\n";
 }
 
 int wget_c_file_client::read_handle(std::size_t bytes_transferred)
 {
 
-	do_recive_wget_file();
+	do_recive_wget_file(bytes_transferred);
 	return 0;
 
+}
+
+int wget_c_file_client::read_error()
+{
+
+	return 0;
 }

@@ -4,6 +4,7 @@
 
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
+		
 
 void down_json_client::receive_buffer(std::size_t length)
 {
@@ -29,6 +30,7 @@ void down_json_client::receive_buffer(std::size_t length)
 	}
 	break;
 	case '1':
+		//parse_client_list_json("list.json");
 		save_file(name, text);//保存内容
 		parse_block_json(text);
 		down_load();//把任务放在线程池里向服务器请求下载
@@ -55,6 +57,12 @@ int down_json_client::read_handle(std::size_t bytes_transferred)
 }
 
 
+int down_json_client::read_error()
+{
+
+	return 0;
+}
+
 void  down_json_client::parse_server_list_json(std::string text_json)//打开list_json   json文件  解析json文件
 {
 	files_inserver.deserializeFromJSON(text_json.c_str());
@@ -76,6 +84,7 @@ void down_json_client::parse_client_list_json(std::string name)//打开list_json  
 	std::string readbuffer = open_json_file(name);
 	files_inclient.deserializeFromJSON(readbuffer.c_str());
 }
+
 
 void down_json_client::isfile_exist(const std::string file_buf, int buf_len)//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 {
@@ -136,7 +145,7 @@ void down_json_client::down_json_run(filestruct::block Files, std::string loadip
 		//QString port = QString::fromStdString(loadport);
 
 		//emit sign_down_block(var,ip, port);
-
+		parse_client_list_json("list.json");
 		asio::ip::tcp::resolver resolver(get_io_context());
 
 		auto endpoints = resolver.resolve(loadip, loadport);
@@ -194,8 +203,13 @@ void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 					continue;
 				OutputDebugString(L"转文件io_context");
 
-				pool.enqueue(bind(&down_json_client::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid)));
-
+				
+				//pool.enqueue(bind(&down_json_client::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid)));
+				
+				QVariant var;
+				var.setValue(blks.blocks_[iter.blockid]);
+		
+				emit sign_down_block(var, it->second.server.back().ip.data(), it->second.server.back().port.data());
 				//down_json_run(blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid));
 			}
 		}

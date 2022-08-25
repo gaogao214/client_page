@@ -44,7 +44,8 @@ public slots:
 private:
     std::shared_ptr<down_json_client> down_json_ptr_;
     std::shared_ptr<wget_c_file_client> m_wget_c_file_;
-    std::shared_ptr<down_block_client> down_block_ptr_;
+    //std::shared_ptr<down_block_client> down_block_ptr_;
+    std::vector<std::shared_ptr<down_block_client>> down_blocks_;
 
     double dpro;
 

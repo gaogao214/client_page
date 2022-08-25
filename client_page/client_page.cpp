@@ -93,9 +93,13 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	auto endpoints = resolver.resolve("127.0.0.1", "12314");
 	bck = file_names.value<filestruct::block>();
 
-	down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
+	//if(down_block_ptr_==nullptr)
+	auto down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
+	
 
 	down_block_ptr_->send_filename();
+
+	down_blocks_.push_back(down_block_ptr_);
 
 	//QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
 	//if (connecthanndle_pro_bar)
@@ -113,10 +117,10 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 void client_page::wget_c_file_()
 {
 
-
-	asio::ip::tcp::resolver resolver_1(io_pool_.get_io_context());
-	auto endpoint_1 = resolver_1.resolve({ "127.0.0.1","12313" });
-	m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_1/*,this*/);
+	asio::ip::tcp::resolver resolver_(io_pool_.get_io_context());
+	auto endpoint_ = resolver_.resolve( "127.0.0.1","12313" );
+	m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_/*,this*/);
+	m_wget_c_file_->do_send_wget_file_name();
 	//QMetaObject::Connection connecthanndle_pro_bar = connect(m_wget_c_file_.get(), SIGNAL(sign_wget_c_file_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
 	//if (connecthanndle_pro_bar)
 	//{

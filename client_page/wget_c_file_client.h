@@ -13,14 +13,15 @@ public:
 	}
 
 public:
-	void do_send_wget_file_name();//发送名字
+	void do_send_wget_file_name();//发送断点续传的名字
 
-	void do_send_wget_file_name_offset();//发送偏移长度
+	void do_send_wget_file_name_offset();//发送断点续传的内容
 
-	void do_recive_wget_file();
+	void do_recive_wget_file(std::size_t len);
 
 protected:
 	virtual int read_handle(std::size_t bytes_transferred) override;
+	virtual int read_error() override;
 
 private:
 	inline size_t send_file_len(const std::string& filename)
@@ -54,5 +55,10 @@ private:
 	std::string send_name;						//发送断点续传的名字
 	std::string wget_text;						//发送断点续传文件的内容
 	std::string recive_wget_name;               //接收断点续传的文件名 偏移量 余下的长度 内容
+
+	std::map<std::string, std::size_t> name_num_map_;
+
+	std::size_t count = 0;
+
 };
 

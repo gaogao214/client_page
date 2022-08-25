@@ -8,7 +8,7 @@ void down_block_client::send_filename()
 	if (downloadingIndex == blk.files.size())
 	{
 		std::string id_ = std::to_string(blk.id);
-		client_to_server(downfile_path.port);
+		//client_to_server(downfile_path.port);
 		//dj.send_id_port(id_+","+downfile_path.port);
 		return;
 	}
@@ -28,9 +28,11 @@ void down_block_client::send_filename()
 				does_the_folder_exist(name);
 				
 			}
+			
 
 	});
 
+	send_filename();
 }
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅĞ¶ÏÎÄ¼ş¼ĞÊÇ·ñ´æÔÚ£¬²»´æÔÚÔò´´½¨ÎÄ¼ş¼Ğ
@@ -49,16 +51,45 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅĞ¶
 	//recive_file_text(file_path, 4096, list_name);
 }
 
+
 void down_block_client::recive_file_text(size_t recive_len)
 {
 	
-	std::ofstream file(file_path.data(), std::ios::out | std::ios::binary | std::ios::app);
-	//file.seekp(offset_len, std::ios::beg);
+	std::string str(buffer_.data(), recive_len);
+	/*std::string*/ read_name = str.substr(0,16);      //Ãû×Ö
+	/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
+	std::string total_num = str.substr(16,8);       // ×ÜĞòºÅ
+	std::size_t total_num_{};
+	std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
 
-	file.write(buffer_.data(), recive_len);
+	std::string text_ = str.substr(24);           //ÄÚÈİ
 
-	file.close();
-	send_filename();
+
+	
+	map_.emplace(read_name, total_num_);        
+	std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
+
+
+	for (auto iter = map_.begin(); iter != map_.end(); iter++)
+	{
+		if (iter->first == read_name )
+		{
+
+			recive_len = recive_len - 8 - 16 ;
+			file.write(text_.data(), recive_len);
+			++count;
+
+			if (iter->second == count)
+			{
+
+				file.close();
+				save_location(file_path_, read_name);
+				count = 0;
+			}
+				
+		}
+	}
+
 }
 
 int down_block_client::read_handle(std::size_t bytes_transferred)
@@ -68,6 +99,23 @@ int down_block_client::read_handle(std::size_t bytes_transferred)
 	return 0;
 }
 
+int down_block_client::read_error()
+{
+	wcfi = parse_wget_c_file_json("wget_c_file1.json");
+
+
+	for (auto& iter : wcfi.wget_c_file_list)
+	{
+		wcf.wget_name = iter.wget_name;
+		wcf.offset = iter.offset;
+		wcfi_copy.wget_c_file_list.push_back(wcf);
+	}
+	save_location(file_path_, read_name);
+
+	Breakpoint_location();
+
+	return 0;
+}
 
 
 //¶Ï¿ªÔÙÁ¬½ÓÊ±     wcfi Çå¿Õ  ¶Ï¿ªÁ¬½ÓÊ±£¬±£´æµ½Ò»¸öÎÄ¼şÖĞ £¬Á¬½ÓÊ±£¬ÏÈ¶ÁÕâ¸öÎÄ¼ş   ÔÙ°ÑÕâ¸ö±£´æµ½±ğµÄÎÄ¼şÖĞ
@@ -86,8 +134,8 @@ void down_block_client::save_location(const string& name, const string& no_path_
 	wcf.wget_name = no_path_add_name;
 	wcf.offset = file_size;
 
-	wcfi1.wget_c_file_list.push_back(wcf);
-	save_wget_c_file_json(wcfi1, "wget_c_file1.json");
+	wcfi_copy.wget_c_file_list.push_back(wcf);
+	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
 }
 
@@ -99,18 +147,18 @@ void down_block_client::Breakpoint_location()
 	{
 
 		//ÔÚ±¾µØlist.jsonÎÄ±¾ÀïÕÒµ½ºÍ·şÎñ¶ËÏàÍ¬µÄÃû×Ö
-		auto it_client = std::find_if(wcfi1.wget_c_file_list.begin(), wcfi1.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
-		if (it_client == wcfi1.wget_c_file_list.end())//Èç¹ûÃ»ÓĞÕÒµ½Ãû×Ö£¬¾Í°ÑÎÄ¼şÃûÌí¼Óµ½wget_c_fileÕâ¸öÎÄ¼şÖĞ
+		auto it_client = std::find_if(wcfi_copy.wget_c_file_list.begin(), wcfi_copy.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
+		if (it_client == wcfi_copy.wget_c_file_list.end())//Èç¹ûÃ»ÓĞÕÒµ½Ãû×Ö£¬¾Í°ÑÎÄ¼şÃûÌí¼Óµ½wget_c_fileÕâ¸öÎÄ¼şÖĞ
 		{
 			if (iter.path.empty())
 				continue;
 
 			wcf.wget_name = iter.path;
 			wcf.offset = 0;
-			wcfi1.wget_c_file_list.push_back(wcf);
+			wcfi_copy.wget_c_file_list.push_back(wcf);
 		}
 	}
-	save_wget_c_file_json(wcfi1, "wget_c_file.json");
+	save_wget_c_file_json(wcfi_copy, "wget_c_file.json");
 
 }
 

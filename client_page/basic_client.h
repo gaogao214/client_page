@@ -4,6 +4,9 @@
 #include <QObject>
 #include <sstream>
 
+#define SEND_COUNT_SIZE 1024*1024
+
+
 class basic_client:public QObject
 {
 	Q_OBJECT
@@ -41,6 +44,7 @@ public:
 
 protected:
 	virtual int read_handle(std::size_t) = 0;
+	virtual int read_error() = 0;
 
 signals:
 	void signal_connect();
@@ -52,7 +56,9 @@ private:
 			[this](std::error_code ec, asio::ip::tcp::endpoint)
 			{
 				if (ec)
-					return;
+				{
+					read_error();
+				}
 
 				emit signal_connect();
 				do_read_header();
@@ -60,15 +66,16 @@ private:
 	}
 
 	void do_read_header()
-	{
-		//buffer_.fill(0);
-		//std::memset(buffer_.data(), 0, 4096);//清空内存
+	{		
 
 		asio::async_read(socket_, asio::buffer(buffer_, sizeof(size_t)),
 			[this](std::error_code ec, std::size_t)
 			{
 				if (ec)
-					return;
+				{
+					read_error();
+					return ;
+				}
 				
 				std::size_t receive_length{};
 
@@ -82,9 +89,7 @@ private:
 	}
 
 	void do_read_body(std::size_t length)
-	{
-		//buffer_.fill(0);
-		//std::memset(buffer_.data(), 0, 4096);//清空内存
+	{		
 
 		asio::async_read(socket_, asio::buffer(buffer_, length), 
 			[this](std::error_code ec, std::size_t bytes_transferred)
@@ -102,8 +107,8 @@ private:
 
 
 protected:
-	std::array<char,4096> buffer_;
-	/*char buffer_[4096];*/
+	//std::array<char, 4096> buffer_;
+	std::array<char, 8192+1024> buffer_;
 
 private:
 	asio::io_context& io_context_;
