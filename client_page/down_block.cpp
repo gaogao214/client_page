@@ -245,7 +245,7 @@ void down_block::save_location(const string& name,const string& no_path_add_name
 	
 }
 
-/*记录暂停下载时的  文件名以及偏移量  */
+/*记录暂停下载时的  文件名以及偏移量 */
 void down_block::Breakpoint_location()
 {
 	/*把断点后的文件名也保存在wget_c_file中*/

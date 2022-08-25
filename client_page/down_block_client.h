@@ -28,6 +28,7 @@ protected:
 
 public:
 
+
 	void does_the_folder_exist(const std::string& list_name);//判断文件夹是否存在，不存在则创建文件夹
 
 	void client_to_server(std::string profile_port);    //开一个线程，客户端转换成服务端
@@ -99,5 +100,14 @@ private:
 	std::string texts_;
 	std::size_t count = 0;
 	//std::array<char, 5> arr{ 'a','a','a','a','a' };
+
+
+
+	std::deque<std::string> write_msgs_;
+	//std::deque<char *> write_msgs_;
+	//std::deque<std::array<char, 8192 + 1024>> write_msgs_;
+
+	std::mutex write_mtx_;
+
 };
 

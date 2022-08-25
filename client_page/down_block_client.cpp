@@ -43,21 +43,30 @@ void down_block_client::send_filename()
 
 		if (name.empty())
 			continue;
+		Sleep(200);
 
 		size_t name_len = name.size();
 		file_name.resize(sizeof(size_t) + name_len);
 		std::memcpy(file_name.data(), &name_len, sizeof(size_t));
 		sprintf(&file_name[sizeof(size_t)], "%s", name.data());
 
+
+		
 		this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
 			{
 				if (!ec)
 				{
 					does_the_folder_exist(name);
+					OutputDebugStringA(name.data());
+					OutputDebugString(L"\n");
+					Sleep(30);
 				}
 			});
+
 	}
 }
+
+
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)//判断文件夹是否存在，不存在则创建文件夹
 {
@@ -108,6 +117,7 @@ void down_block_client::recive_file_text(size_t recive_len)
 
 				file.close();
 				save_location(file_path_, read_name);
+				//Sleep(10);
 				count = 0;
 			}
 				
