@@ -96,6 +96,9 @@
     <ClInclude Include="file_struct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="basic_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\client.ico">
@@ -103,9 +106,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="basic_client.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="down_json_client.h">
       <Filter>Header Files</Filter>
     </QtMoc>

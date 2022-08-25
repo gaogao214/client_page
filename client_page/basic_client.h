@@ -9,7 +9,7 @@
 
 class basic_client:public QObject
 {
-	Q_OBJECT
+	//Q_OBJECT
 public:
 	explicit basic_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		:io_context_(io_context)
@@ -46,8 +46,8 @@ protected:
 	virtual int read_handle(std::size_t) = 0;
 	virtual int read_error() = 0;
 
-signals:
-	void signal_connect();
+//signals:
+//	void signal_connect();
 
 private:
 	void do_connect(asio::ip::tcp::resolver::results_type endpoints)
@@ -60,7 +60,7 @@ private:
 					read_error();
 				}
 
-				emit signal_connect();
+				//emit signal_connect();
 				do_read_header();
 			});
 	}

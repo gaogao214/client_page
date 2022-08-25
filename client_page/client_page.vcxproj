@@ -115,7 +115,7 @@
     <ClInclude Include="..\..\server_page\server_page\GxJsonUtility.h" />
     <ClInclude Include="file_struct.h" />
     <ClInclude Include="wget_c_file_client.h" />
-    <QtMoc Include="basic_client.h" />
+    <ClInclude Include="basic_client.h" />
     <ClInclude Include="down_block_client.h" />
     <QtMoc Include="down_json_client.h" />
     <ClInclude Include="file_server.h" />

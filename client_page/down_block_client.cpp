@@ -2,35 +2,61 @@
 #include "file_server.h"
 void down_block_client::send_filename()
 {
-	if (downloadingIndex > blk.files.size())
-		return;
+	//if (downloadingIndex > blk.files.size())
+	//	return;
 
-	if (downloadingIndex == blk.files.size())
+	//if (downloadingIndex == blk.files.size())
+	//{
+	//	//std::string id_ = std::to_string(blk.id);
+	//	//client_to_server(downfile_path.port);
+	//	//dj.send_id_port(id_+","+downfile_path.port);
+	//	return;
+	//}
+
+	// name = blk.files.at(downloadingIndex++);
+
+	// if (name.empty())
+	//	 return;
+
+	////emit signal_file_name_(QString::fromStdString(name));
+	//size_t name_len = name.size();
+	//file_name.resize(sizeof(size_t) + name_len);
+	//std::memcpy(file_name.data(), &name_len, sizeof(size_t));
+	//sprintf(&file_name[sizeof(size_t)], "%s", name.data());
+
+	//this->async_write(file_name, [&, this](std::error_code ec, std::size_t)
+	//{
+	//		if (!ec)
+	//		{
+	//		
+	//			does_the_folder_exist(name);
+	//			
+	//		}
+	//});
+
+	//send_filename();
+
+
+	for (auto iter : blk.files)
 	{
-		std::string id_ = std::to_string(blk.id);
-		//client_to_server(downfile_path.port);
-		//dj.send_id_port(id_+","+downfile_path.port);
-		return;
-	}
+		auto name = iter;
 
-	 name = blk.files.at(downloadingIndex++);
-	//emit signal_file_name_(QString::fromStdString(name));
-	size_t name_len = name.size();
-	file_name.resize(sizeof(size_t) + name_len);
-	std::memcpy(file_name.data(), &name_len, sizeof(size_t));
-	sprintf(&file_name[sizeof(size_t)], "%s", name.data());
+		if (name.empty())
+			continue;
 
-	this->async_write(file_name, [&, this](std::error_code ec, std::size_t)
-	{
-			if (!ec)
+		size_t name_len = name.size();
+		file_name.resize(sizeof(size_t) + name_len);
+		std::memcpy(file_name.data(), &name_len, sizeof(size_t));
+		sprintf(&file_name[sizeof(size_t)], "%s", name.data());
+
+		this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
 			{
-			
-				does_the_folder_exist(name);
-				
-			}
-	});
-
-	send_filename();
+				if (!ec)
+				{
+					does_the_folder_exist(name);
+				}
+			});
+	}
 }
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)//判断文件夹是否存在，不存在则创建文件夹
