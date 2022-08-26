@@ -1,5 +1,8 @@
 #pragma once
 #include <asio.hpp>
+#include <thread>
+#include <pthread.h>
+
 #include "basic_client.h"
 
 #include "down_json_client.h"
@@ -63,22 +66,20 @@ public:
 		return content;
 
 	}
-	void save_location(const std::string& name, const std::string& no_path_add_name);    /*记录暂停下载时的  文件名以及偏移量  */
+	static void save_location(const std::string& name, const std::string& no_path_add_name);    /*记录暂停下载时的  文件名以及偏移量  */
 
-	void save_wget_c_file_json(filestruct::wget_c_file_info wcfi, const std::string& name);
+	static void save_wget_c_file_json(filestruct::wget_c_file_info wcfi, /*const */std::string name);
 
 	void Breakpoint_location();    /*记录暂停下载时的  文件名以及偏移量  */
 
-	void gsh(std::string& strtxt);//按照格式写入id.json 文件
+	static void gsh(std::string& strtxt);//按照格式写入id.json 文件
 
 
 private:
 	filestruct::block blk;//feige
-	filestruct::wget_c_file wcf;
 
 	filestruct::wget_c_file_info wcfi;  //声明一个结构体
 
-	filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
 
 	//down_json_client dj;       //声明一个down_json类
 
@@ -101,13 +102,17 @@ private:
 	std::size_t count = 0;
 	//std::array<char, 5> arr{ 'a','a','a','a','a' };
 
+public:
 
-
-	std::deque<std::string> write_msgs_;
+	static std::deque<filestruct::wget_c_file> write_msgs_;
 	//std::deque<char *> write_msgs_;
 	//std::deque<std::array<char, 8192 + 1024>> write_msgs_;
 
-	std::mutex write_mtx_;
+	static std::mutex write_mtx_;
+//	pthread_mutex_t pth_mutex;
+	//shared_mutex shar_mutex;
+	static filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
+	static filestruct::wget_c_file wcf;
 
 };
 

@@ -1,57 +1,40 @@
 #include "down_block_client.h"
 #include "file_server.h"
+#include "request.hpp"
+
+
+
+filestruct::wget_c_file_info down_block_client::wcfi_copy ;
+filestruct::wget_c_file down_block_client::wcf;
+std::deque<filestruct::wget_c_file> down_block_client::write_msgs_;
+std::mutex down_block_client::write_mtx_;
+
 void down_block_client::send_filename()
 {
-	//if (downloadingIndex > blk.files.size())
-	//	return;
-
-	//if (downloadingIndex == blk.files.size())
-	//{
-	//	//std::string id_ = std::to_string(blk.id);
-	//	//client_to_server(downfile_path.port);
-	//	//dj.send_id_port(id_+","+downfile_path.port);
-	//	return;
-	//}
-
-	// name = blk.files.at(downloadingIndex++);
-
-	// if (name.empty())
-	//	 return;
-
-	////emit signal_file_name_(QString::fromStdString(name));
-	//size_t name_len = name.size();
-	//file_name.resize(sizeof(size_t) + name_len);
-	//std::memcpy(file_name.data(), &name_len, sizeof(size_t));
-	//sprintf(&file_name[sizeof(size_t)], "%s", name.data());
-
-	//this->async_write(file_name, [&, this](std::error_code ec, std::size_t)
-	//{
-	//		if (!ec)
-	//		{
-	//		
-	//			does_the_folder_exist(name);
-	//			
-	//		}
-	//});
-
-	//send_filename();
-
 
 	for (auto iter : blk.files)
 	{
+		
 		auto name = iter;
 
 		if (name.empty())
 			continue;
 		Sleep(200);
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(200ms);
 
 		size_t name_len = name.size();
+		/*request req;
+		req.header_.length_ = name_len;
+		memcpy(req.header_.name_,&name,name.size());*/
+		
 		file_name.resize(sizeof(size_t) + name_len);
 		std::memcpy(file_name.data(), &name_len, sizeof(size_t));
 		sprintf(&file_name[sizeof(size_t)], "%s", name.data());
 
 
-		
+		//this->async_write(req, [name, this](std::error_code ec, std::size_t)
+
 		this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
 			{
 				if (!ec)
@@ -59,7 +42,7 @@ void down_block_client::send_filename()
 					does_the_folder_exist(name);
 					OutputDebugStringA(name.data());
 					OutputDebugString(L"\n");
-					Sleep(30);
+				
 				}
 			});
 
@@ -116,7 +99,10 @@ void down_block_client::recive_file_text(size_t recive_len)
 			{
 
 				file.close();
+
+				
 				save_location(file_path_, read_name);
+
 				//Sleep(10);
 				count = 0;
 			}
@@ -157,7 +143,11 @@ int down_block_client::read_error()
 void down_block_client::save_location(const string& name, const string& no_path_add_name)
 {
 
-
+	//for (auto iter : blk.files)
+	//{
+	//	
+	//}
+	
 	ifstream id_File(name, ios::binary);
 	id_File.seekg(0, ios_base::end);
 	size_t file_size = id_File.tellg();//文本的大小
@@ -167,8 +157,12 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	wcf.wget_name = no_path_add_name;
 	wcf.offset = file_size;
-
+	
 	wcfi_copy.wget_c_file_list.push_back(wcf);
+	write_mtx_.lock();
+//	write_msgs_.push_back(wcf);
+	write_mtx_.unlock();
+
 	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
 }
@@ -196,16 +190,19 @@ void down_block_client::Breakpoint_location()
 
 }
 
-void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi, const string& name)
+void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  string name)
 {
 	string text = RapidjsonToString(wcfi.serializeToJSON());
 	gsh(text);
+
 
 	auto file = fopen(name.c_str(), "wb");
 
 	const char* t = text.c_str();
 	size_t length = text.length();
+
 	fwrite(t, length, 1, file);
+
 	fflush(file);
 	fclose(file);
 

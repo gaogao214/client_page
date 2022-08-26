@@ -228,6 +228,7 @@ void down_json_client::send_id_port(const std::string id_port)//发送成为服务器的
 	std::memcpy(id_port_buf.data(), &id_port_len, sizeof(size_t));
 	sprintf(&id_port_buf[sizeof(size_t)], "%s", id_port.c_str());//把文件名赋给&Id_IP_Port_buf[10]
 
+
 	this->async_write(id_port_buf, [this, id_port_len, id_port](std::error_code ec, std::size_t)
 		{
 			std::cout << ec << std::endl;
