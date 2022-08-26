@@ -8,14 +8,21 @@ filestruct::wget_c_file_info down_block_client::wcfi_copy ;
 filestruct::wget_c_file down_block_client::wcf;
 std::deque<filestruct::wget_c_file> down_block_client::write_msgs_;
 std::mutex down_block_client::write_mtx_;
+std::vector < std::string >	down_block_client::downloaded_names_;
+filestruct::block down_block_client::blk_copy;
+
+
 
 void down_block_client::send_filename()
 {
-
+	blk_copy = blk;
+	
 	for (auto iter : blk.files)
 	{
-		
+		int s=blk.id;		
+
 		auto name = iter;
+
 
 		if (name.empty())
 			continue;
@@ -99,7 +106,7 @@ void down_block_client::recive_file_text(size_t recive_len)
 			{
 
 				file.close();
-
+				//下载完 一个id号的文件   客户端变成服务器
 				
 				save_location(file_path_, read_name);
 
@@ -157,11 +164,40 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	wcf.wget_name = no_path_add_name;
 	wcf.offset = file_size;
-	
-	wcfi_copy.wget_c_file_list.push_back(wcf);
+
 	write_mtx_.lock();
+
+	wcfi_copy.wget_c_file_list.push_back(wcf);
+
 //	write_msgs_.push_back(wcf);
 	write_mtx_.unlock();
+
+	downloaded_names_.push_back(wcf.wget_name);
+
+
+	if (blk_copy.id == 1)
+		{
+		if (downloaded_names_ == blk_copy.files)
+		{
+			OutputDebugString(L"\n客户端下载完id =1  的文件  转换成服务端\n");
+
+		}
+
+			/*for (auto it : blk_copy.files)
+			{
+				OutputDebugString(L"\nid=1");
+
+				OutputDebugStringA(it.data());
+
+			}*/
+		}
+
+
+
+
+
+
+
 
 	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
