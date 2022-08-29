@@ -187,7 +187,7 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 		QString get_port = QString::fromStdString(downfile_path.port);
 
-		//emit client_->signal_get_id_port_for_server(id_num, get_port);
+		
 		emit client_->signal_get_id_port_externl(id_num, get_port);
 		
 		OutputDebugString(L"id 块下载完成  客户端转服务器");

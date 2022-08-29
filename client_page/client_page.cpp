@@ -197,5 +197,7 @@ void client_page::send_get_id_port_for_server(std::size_t get_server_id, QString
 {
 
 	OutputDebugString(L"客户端转服务器    进入槽________________________________________________\n");
-	
+	std::string str = get_server_port.toStdString();
+	std::string id_port = std::to_string(get_server_id)+','+str;
+	down_json_ptr_->send_id_port(id_port);
 }

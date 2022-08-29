@@ -18,11 +18,7 @@ public:
 		, blk(block)
 	{
 		client_ = this;
-		/*QMetaObject::Connection connecthanndle_ = QObject::connect(this, &down_block_client::signal_get_id_port_for_server, [this](std::size_t get_server_id, QString get_server_port)
-			{
-			
-				emit slot_inside_signal_get_id_port(get_server_id, get_server_port);
-			});*/
+	
 	}
 
 public:
@@ -83,17 +79,11 @@ public:
 
 
 signals:
-	void signal_get_id_port_for_server(std::size_t get_server_id, QString get_server_port);
+	
 	void signal_get_id_port_externl(std::size_t get_server_id, QString get_server_port);
 	 void signal_pro_bar(int maxvalue, int value);
 	 void signal_file_name_(QString file_name_);
 
-public slots:
-	void slot_inside_signal_get_id_port(std::size_t get_server_id, QString get_server_port)
-	{
-		emit signal_get_id_port_externl(get_server_id, get_server_port);
-	}
-	
 
 private:
 	filestruct::block blk;//feige
