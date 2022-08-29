@@ -34,6 +34,7 @@ public:
 
 public slots:
 
+	void send_get_id_port_for_server(std::size_t get_server_id, QString get_server_port);
 	void request_connect();
 	void down_block_file_(QVariant file_names, QString loadip, QString loadport);
 	void wget_c_file_();
@@ -41,6 +42,7 @@ public slots:
 	void show_file_name(/*char file_name[512]*/QString file_name);
 	void show_text_log(QString log_);
 	void show_connect();
+
 private:
 	//std::shared_ptr<down_json_client> down_json_ptr_;
 	down_json_client* down_json_ptr_;

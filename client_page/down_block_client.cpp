@@ -6,12 +6,11 @@
 
 filestruct::wget_c_file_info down_block_client::wcfi_copy ;
 filestruct::wget_c_file down_block_client::wcf;
-std::deque<filestruct::wget_c_file> down_block_client::write_msgs_;
 std::mutex down_block_client::write_mtx_;
-std::vector < std::string >	down_block_client::downloaded_names_;
 std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::id_to_the_files;
 std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::total_id_files_num;
 filestruct::block down_block_client::blk_copy;
+down_block_client* down_block_client::client_=nullptr;
 
 
 
@@ -21,13 +20,10 @@ void down_block_client::send_filename()
 	
 
 	for (auto iter : blk.files)
-	{
-		int s=blk.id;		
+	{	
 		auto name = iter;
 
 		total_id_files_num[blk.id].push_back(name);
-
-
 
 		if (name.empty())
 			continue;
@@ -35,29 +31,22 @@ void down_block_client::send_filename()
 		using namespace std::chrono_literals;
 		std::this_thread::sleep_for(200ms);
 
-	
-
-		//char strs_[1024];
-		//std::memcpy(strs_,&blk.id,sizeof(size_t));
-		//std::memcpy(strs_+sizeof(size_t), name.data(), name.size());
 
 		std::string str = std::to_string(blk.id) + name ;
 		std::size_t str_len = str.size();
-		size_t name_len = name.size();
-		/*request req;
-		req.header_.length_ = name_len;
-		memcpy(req.header_.name_,&name,name.size());*/
+
+
+		//request req;
+		//req.header_.id_ = blk.id;
+		//memcpy(req.header_.name_,&name,name.size());
 		
-		//file_name.resize(sizeof(size_t) + name_len);
-		//std::memcpy(file_name.data(), &name_len, sizeof(size_t));
-		//sprintf(&file_name[sizeof(size_t)], "%s", name.data());
 
 		file_name.resize(sizeof(size_t) + str_len);
 		//std::memcpy(file_name.data(), &str_len, sizeof(size_t));
 		sprintf(&file_name[0], "%s", str.data());
 
 
-		//this->async_write(req, [name, this](std::error_code ec, std::size_t)
+//		this->async_write(req.to_bytes(req.header_), [name, this](std::error_code ec, std::size_t)
 
 		this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
 			{
@@ -130,6 +119,7 @@ void down_block_client::recive_file_text(size_t recive_len)
 				//下载完 一个id号的文件   客户端变成服务器
 				
 				save_location(file_path_, read_name,id_num);
+				//emit signal_get_server_id_port(id_num, "12314");
 
 				//Sleep(10);
 				count = 0;
@@ -168,19 +158,14 @@ int down_block_client::read_error()
 
 //断开再连接时     wcfi 清空  断开连接时，保存到一个文件中 ，连接时，先读这个文件   再把这个保存到别的文件中
 //保存到wget_c_file文件中 下载完成的文件名  和偏移量
+//加锁（需要把这个成员函数设置成全局函数）否则加锁不会成功（成员函数设置成static  成员变量也需要设置成static）
 void down_block_client::save_location(const string& name, const string& no_path_add_name,std::size_t id_num)
 {
-
-	//for (auto iter : blk.files)
-	//{
-	//	
-	//}
 	
 	ifstream id_File(name, ios::binary);
 	id_File.seekg(0, ios_base::end);
 	size_t file_size = id_File.tellg();//文本的大小
 	id_File.seekg(0, ios_base::beg);
-	//cout << "\nfile_size_===" << file_size << endl;
 
 
 	wcf.wget_name = no_path_add_name;
@@ -190,7 +175,6 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	wcfi_copy.wget_c_file_list.push_back(wcf);
 
-//	write_msgs_.push_back(wcf);
 	write_mtx_.unlock();
 
 
@@ -199,13 +183,20 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	if (total_id_files_num[id_num].size() == id_to_the_files[id_num].size())
 	{
-		//client_to_server(downfile_path.port);
+		client_to_server(downfile_path.port);
+
+		QString get_port = QString::fromStdString(downfile_path.port);
+
+		//emit client_->signal_get_id_port_for_server(id_num, get_port);
+		emit client_->signal_get_id_port_externl(id_num, get_port);
+		
 		OutputDebugString(L"id 块下载完成  客户端转服务器");
 	}
 
 	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
 }
+
 
 /*记录暂停下载时的  文件名以及偏移量  */
 void down_block_client::Breakpoint_location()
@@ -233,7 +224,7 @@ void down_block_client::Breakpoint_location()
 void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  string name)
 {
 	string text = RapidjsonToString(wcfi.serializeToJSON());
-	gsh(text);
+	json_formatting(text);
 
 
 	auto file = fopen(name.c_str(), "wb");
@@ -251,7 +242,7 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 
 void down_block_client::client_to_server(string profile_port)//开一个线程，客户端转换成服务端
 {
-	std::thread t(std::bind(&down_block_client::server,this, profile_port));
+	std::thread t(std::bind(&down_block_client::server, profile_port));
 	/*	t.join();*/
 	//std::cout << "客户端: id: " << id_ << "  端口号: " << profile_port << " 变成服务端\n";
 	t.detach();
@@ -268,7 +259,7 @@ void down_block_client::server(const std::string& server_port)//客户端转换成服务
 }
 
 
-void down_block_client::gsh(std::string& strtxt)//按照格式写入 json 文件
+void down_block_client::json_formatting(std::string& strtxt)//按照格式写入 json 文件
 {
 	unsigned int dzkh = 0; //括号的计数器
 	bool isy = false; //是不是引号

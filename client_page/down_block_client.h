@@ -3,6 +3,7 @@
 #include <thread>
 #include <pthread.h>
 #include <unordered_map>
+#include <QObject>
 #include "basic_client.h"
 
 #include "down_json_client.h"
@@ -10,12 +11,18 @@
 
 class down_block_client : public basic_client 
 {
+	Q_OBJECT
 public:
 	down_block_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints, const filestruct::block& block = {})
 		: basic_client(io_context, endpoints)
 		, blk(block)
 	{
-		
+		client_ = this;
+		/*QMetaObject::Connection connecthanndle_ = QObject::connect(this, &down_block_client::signal_get_id_port_for_server, [this](std::size_t get_server_id, QString get_server_port)
+			{
+			
+				emit slot_inside_signal_get_id_port(get_server_id, get_server_port);
+			});*/
 	}
 
 public:
@@ -34,9 +41,9 @@ public:
 
 	void does_the_folder_exist(const std::string& list_name);//判断文件夹是否存在，不存在则创建文件夹
 
-	/*static*/ void client_to_server(std::string profile_port);    //开一个线程，客户端转换成服务端
+	static void client_to_server(std::string profile_port);    //开一个线程，客户端转换成服务端
 
-	/*static*/ void server(const std::string& server_port);      //客户端转换成服务端
+	static void server(const std::string& server_port);      //客户端转换成服务端
 
 	filestruct::wget_c_file_info  parse_wget_c_file_json(const std::string& name)//打开断点续传文件  解析json文件
 	{
@@ -72,52 +79,55 @@ public:
 
 	void Breakpoint_location();    /*记录暂停下载时的  文件名以及偏移量  */
 
-	static void gsh(std::string& strtxt);//按照格式写入id.json 文件
+	static void json_formatting(std::string& strtxt);//按照格式写入id.json 文件
 
+
+signals:
+	void signal_get_id_port_for_server(std::size_t get_server_id, QString get_server_port);
+	void signal_get_id_port_externl(std::size_t get_server_id, QString get_server_port);
+	 void signal_pro_bar(int maxvalue, int value);
+	 void signal_file_name_(QString file_name_);
+
+public slots:
+	void slot_inside_signal_get_id_port(std::size_t get_server_id, QString get_server_port)
+	{
+		emit signal_get_id_port_externl(get_server_id, get_server_port);
+	}
+	
 
 private:
 	filestruct::block blk;//feige
 
 	filestruct::wget_c_file_info wcfi;  //声明一个结构体
 
-
-	//down_json_client dj;       //声明一个down_json类
-
 	int downloadingIndex = 0;//下载完的个数
 	std::string file_name;
 	std::string file_path;   //路径+文件名
-	/*std::string name;*/
-
-
-
+	
 
 	//名字   总序号   内容
 	std::string read_name;     //名字    name
 	std::string file_path_;   //带有路径的名字   path + name
 	std::vector<std::string> vec_text_;
-	//std::map<std::string, std::vector<std::string>> num_text_;
-	//std::map<std::string, std::map<std::string, std::vector<std::string>>> map_;
+	
 	std::map<std::string, std::size_t> map_;
 	std::string texts_;
 	std::size_t count = 0;
-	//std::array<char, 5> arr{ 'a','a','a','a','a' };
+	
 	std::string id;
 	size_t id_num;
 public:
-
-	static std::deque<filestruct::wget_c_file> write_msgs_;
-	//std::deque<char *> write_msgs_;
-	//std::deque<std::array<char, 8192 + 1024>> write_msgs_;
-	static std::vector < std::string >	downloaded_names_;
 
 	static std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
 	static std::unordered_map<std::size_t, std::vector<std::string>> total_id_files_num;
 
 	static std::mutex write_mtx_;
-//	pthread_mutex_t pth_mutex;
-	//shared_mutex shar_mutex;
+
 	static filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
 	static filestruct::wget_c_file wcf;
 	static filestruct::block blk_copy;
+
+	static down_block_client* client_;
+
 };
 

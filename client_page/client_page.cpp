@@ -36,18 +36,18 @@ void client_page::request_connect()
 	
 	//qRegisterMetaType<filestruct::block>("filestruct::block");
 	//qRegisterMetaType<std::string>("std::string");
-	//qRegisterMetaType<QTextCursor>("QTextCursor");
-	//QMetaObject::Connection connecthanndle_pro_bar = connect(down_json_ptr_, SIGNAL(sign_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
-	//if (connecthanndle_pro_bar)
-	//{
-	//	OutputDebugString(L"pro bar 信号与槽函数关联成功\n");
-	//	ui.text_log->insertPlainText(u8"pro_bar 槽函数关联成功\n");
+	qRegisterMetaType<QTextCursor>("QTextCursor");
+	QMetaObject::Connection connecthanndle_pro_bar = connect(down_json_ptr_, SIGNAL(sign_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
+	if (connecthanndle_pro_bar)
+	{
+		OutputDebugString(L"pro bar 信号与槽函数关联成功\n");
+		ui.text_log->insertPlainText(u8"pro_bar 槽函数关联成功\n");
 
-	//}
-	//else
-	//{
-	//	OutputDebugString(L"pro bar 关联失败\n");
-	//}
+	}
+	else
+	{
+		OutputDebugString(L"pro bar 关联失败\n");
+	}
 	//QMetaObject::Connection connecthanndle_name = connect(down_json_ptr_, SIGNAL(sign_file_name(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
 	//if (connecthanndle_name)
 	//{
@@ -101,16 +101,25 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	//if(down_block_ptr_==nullptr)
 	auto down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
 	
-
-	down_block_ptr_->send_filename();
+down_block_ptr_->send_filename();
 
 	down_blocks_.push_back(down_block_ptr_);
+	qRegisterMetaType<std::size_t>("std:::size_t");
 
-	//QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
-	//if (connecthanndle_pro_bar)
-	//{
-	//	ui.text_log->insertPlainText(u8"block _pro_bar 信号与槽 关联成功\n");
-	//}
+	QMetaObject::Connection connecthanndle_ = connect(down_block_ptr_.get(), SIGNAL(signal_get_id_port_externl(std::size_t, QString)), SLOT(send_get_id_port_for_server(std::size_t, QString)), Qt::DirectConnection);
+
+	if (connecthanndle_)
+	{
+		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
+
+	}
+
+
+	/*QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_ptr_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
+	if (connecthanndle_pro_bar)
+	{
+		ui.text_log->insertPlainText(u8"block _pro_bar 信号与槽 关联成功\n");
+	}*/
 	//QMetaObject::Connection connecthanndle_name = connect(down_block_.get(), SIGNAL(signal_file_name_(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
 	//if (connecthanndle_name)
 	//{
@@ -181,4 +190,12 @@ void client_page::show_text_log(QString log_)
 void client_page::show_connect()
 {
 	ui.text_log->insertPlainText(u8"连接成功");
+}
+
+
+void client_page::send_get_id_port_for_server(std::size_t get_server_id, QString get_server_port)
+{
+
+	OutputDebugString(L"客户端转服务器    进入槽________________________________________________\n");
+	
 }
