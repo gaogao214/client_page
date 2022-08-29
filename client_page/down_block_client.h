@@ -2,7 +2,7 @@
 #include <asio.hpp>
 #include <thread>
 #include <pthread.h>
-
+#include <unordered_map>
 #include "basic_client.h"
 
 #include "down_json_client.h"
@@ -34,9 +34,9 @@ public:
 
 	void does_the_folder_exist(const std::string& list_name);//判断文件夹是否存在，不存在则创建文件夹
 
-	void client_to_server(std::string profile_port);    //开一个线程，客户端转换成服务端
+	/*static*/ void client_to_server(std::string profile_port);    //开一个线程，客户端转换成服务端
 
-	void server(const std::string& server_port);      //客户端转换成服务端
+	/*static*/ void server(const std::string& server_port);      //客户端转换成服务端
 
 	filestruct::wget_c_file_info  parse_wget_c_file_json(const std::string& name)//打开断点续传文件  解析json文件
 	{
@@ -66,7 +66,7 @@ public:
 		return content;
 
 	}
-	static void save_location(const std::string& name, const std::string& no_path_add_name);    /*记录暂停下载时的  文件名以及偏移量  */
+	static void save_location(const std::string& name, const std::string& no_path_add_name,std::size_t id_num);    /*记录暂停下载时的  文件名以及偏移量  */
 
 	static void save_wget_c_file_json(filestruct::wget_c_file_info wcfi, /*const */std::string name);
 
@@ -86,7 +86,7 @@ private:
 	int downloadingIndex = 0;//下载完的个数
 	std::string file_name;
 	std::string file_path;   //路径+文件名
-	std::string name;
+	/*std::string name;*/
 
 
 
@@ -101,18 +101,23 @@ private:
 	std::string texts_;
 	std::size_t count = 0;
 	//std::array<char, 5> arr{ 'a','a','a','a','a' };
-
+	std::string id;
+	size_t id_num;
 public:
 
 	static std::deque<filestruct::wget_c_file> write_msgs_;
 	//std::deque<char *> write_msgs_;
 	//std::deque<std::array<char, 8192 + 1024>> write_msgs_;
+	static std::vector < std::string >	downloaded_names_;
+
+	static std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
+	static std::unordered_map<std::size_t, std::vector<std::string>> total_id_files_num;
 
 	static std::mutex write_mtx_;
 //	pthread_mutex_t pth_mutex;
 	//shared_mutex shar_mutex;
 	static filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
 	static filestruct::wget_c_file wcf;
-
+	static filestruct::block blk_copy;
 };
 

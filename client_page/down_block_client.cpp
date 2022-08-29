@@ -9,6 +9,8 @@ filestruct::wget_c_file down_block_client::wcf;
 std::deque<filestruct::wget_c_file> down_block_client::write_msgs_;
 std::mutex down_block_client::write_mtx_;
 std::vector < std::string >	down_block_client::downloaded_names_;
+std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::id_to_the_files;
+std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::total_id_files_num;
 filestruct::block down_block_client::blk_copy;
 
 
@@ -17,27 +19,42 @@ void down_block_client::send_filename()
 {
 	blk_copy = blk;
 	
+
 	for (auto iter : blk.files)
 	{
 		int s=blk.id;		
-
 		auto name = iter;
+
+		total_id_files_num[blk.id].push_back(name);
+
 
 
 		if (name.empty())
 			continue;
-		Sleep(200);
+		
 		using namespace std::chrono_literals;
 		std::this_thread::sleep_for(200ms);
 
+	
+
+		//char strs_[1024];
+		//std::memcpy(strs_,&blk.id,sizeof(size_t));
+		//std::memcpy(strs_+sizeof(size_t), name.data(), name.size());
+
+		std::string str = std::to_string(blk.id) + name ;
+		std::size_t str_len = str.size();
 		size_t name_len = name.size();
 		/*request req;
 		req.header_.length_ = name_len;
 		memcpy(req.header_.name_,&name,name.size());*/
 		
-		file_name.resize(sizeof(size_t) + name_len);
-		std::memcpy(file_name.data(), &name_len, sizeof(size_t));
-		sprintf(&file_name[sizeof(size_t)], "%s", name.data());
+		//file_name.resize(sizeof(size_t) + name_len);
+		//std::memcpy(file_name.data(), &name_len, sizeof(size_t));
+		//sprintf(&file_name[sizeof(size_t)], "%s", name.data());
+
+		file_name.resize(sizeof(size_t) + str_len);
+		//std::memcpy(file_name.data(), &str_len, sizeof(size_t));
+		sprintf(&file_name[0], "%s", str.data());
 
 
 		//this->async_write(req, [name, this](std::error_code ec, std::size_t)
@@ -77,17 +94,21 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅĞ¶
 
 void down_block_client::recive_file_text(size_t recive_len)
 {
-	
+
+
 	std::string str(buffer_.data(), recive_len);
-	/*std::string*/ read_name = str.substr(0,16);      //Ãû×Ö
+	/*std::string*/ id = str.substr(0, 1);
+	/*std::string*/ read_name = str.substr(1,16);      //Ãû×Ö
 	/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
-	std::string total_num = str.substr(16,8);       // ×ÜĞòºÅ
+	std::string total_num = str.substr(17,8);       // ×ÜĞòºÅ
 	std::size_t total_num_{};
 	std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
 
-	std::string text_ = str.substr(24);           //ÄÚÈİ
+	std::string text_ = str.substr(25);           //ÄÚÈİ
 
+	/*size_t*/ id_num = atoi(id.data());
 
+	//id_to_the_files[id_num].push_back(read_name);        //±£´æ id ºÅ  Óë Ãû×Ö   ÓÃÀ´ÅĞ¶Ïid¿éÎÄ¼şÊÇ·ñÏÂÔØÍê
 	
 	map_.emplace(read_name, total_num_);        
 	std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
@@ -108,7 +129,7 @@ void down_block_client::recive_file_text(size_t recive_len)
 				file.close();
 				//ÏÂÔØÍê Ò»¸öidºÅµÄÎÄ¼ş   ¿Í»§¶Ë±ä³É·şÎñÆ÷
 				
-				save_location(file_path_, read_name);
+				save_location(file_path_, read_name,id_num);
 
 				//Sleep(10);
 				count = 0;
@@ -137,7 +158,7 @@ int down_block_client::read_error()
 		wcf.offset = iter.offset;
 		wcfi_copy.wget_c_file_list.push_back(wcf);
 	}
-	save_location(file_path_, read_name);
+	save_location(file_path_, read_name,id_num);
 
 	Breakpoint_location();
 
@@ -147,7 +168,7 @@ int down_block_client::read_error()
 
 //¶Ï¿ªÔÙÁ¬½ÓÊ±     wcfi Çå¿Õ  ¶Ï¿ªÁ¬½ÓÊ±£¬±£´æµ½Ò»¸öÎÄ¼şÖĞ £¬Á¬½ÓÊ±£¬ÏÈ¶ÁÕâ¸öÎÄ¼ş   ÔÙ°ÑÕâ¸ö±£´æµ½±ğµÄÎÄ¼şÖĞ
 //±£´æµ½wget_c_fileÎÄ¼şÖĞ ÏÂÔØÍê³ÉµÄÎÄ¼şÃû  ºÍÆ«ÒÆÁ¿
-void down_block_client::save_location(const string& name, const string& no_path_add_name)
+void down_block_client::save_location(const string& name, const string& no_path_add_name,std::size_t id_num)
 {
 
 	//for (auto iter : blk.files)
@@ -172,32 +193,15 @@ void down_block_client::save_location(const string& name, const string& no_path_
 //	write_msgs_.push_back(wcf);
 	write_mtx_.unlock();
 
-	downloaded_names_.push_back(wcf.wget_name);
 
 
-	if (blk_copy.id == 1)
-		{
-		if (downloaded_names_ == blk_copy.files)
-		{
-			OutputDebugString(L"\n¿Í»§¶ËÏÂÔØÍêid =1  µÄÎÄ¼ş  ×ª»»³É·şÎñ¶Ë\n");
+	id_to_the_files[id_num].push_back(no_path_add_name);        //±£´æ id ºÅ  Óë Ãû×Ö   ÓÃÀ´ÅĞ¶Ïid¿éÎÄ¼şÊÇ·ñÏÂÔØÍê
 
-		}
-
-			/*for (auto it : blk_copy.files)
-			{
-				OutputDebugString(L"\nid=1");
-
-				OutputDebugStringA(it.data());
-
-			}*/
-		}
-
-
-
-
-
-
-
+	if (total_id_files_num[id_num].size() == id_to_the_files[id_num].size())
+	{
+		//client_to_server(downfile_path.port);
+		OutputDebugString(L"id ¿éÏÂÔØÍê³É  ¿Í»§¶Ë×ª·şÎñÆ÷");
+	}
 
 	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
@@ -247,7 +251,7 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 
 void down_block_client::client_to_server(string profile_port)//¿ªÒ»¸öÏß³Ì£¬¿Í»§¶Ë×ª»»³É·şÎñ¶Ë
 {
-	std::thread t(std::bind(&down_block_client::server, this, profile_port));
+	std::thread t(std::bind(&down_block_client::server,this, profile_port));
 	/*	t.join();*/
 	//std::cout << "¿Í»§¶Ë: id: " << id_ << "  ¶Ë¿ÚºÅ: " << profile_port << " ±ä³É·şÎñ¶Ë\n";
 	t.detach();
