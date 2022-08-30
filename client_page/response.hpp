@@ -1,14 +1,20 @@
+//client_ async_read
 #pragma once
 #include <array>
 #include <cstdint>
 
 struct response_header
 {
-	uint32_t length_;
+	response_header(uint32_t id)
+	{
+		proto_id_ = id;
+	}
 
+	uint32_t proto_id_;
 	char name_[32];
-
+	uint32_t length_;
 	uint32_t sequence_;
+	uint32_t totoal_;
 };
 
 

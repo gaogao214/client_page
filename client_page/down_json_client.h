@@ -52,9 +52,6 @@ private:
 
 	void parse_client_list_json(std::string name);//打开list_json   json文件  解析json文件
 
-//	filestruct::wget_c_file_info parse_wget_c_file_json(const std::string& name);//打开wget_c_file.json 断点续传配置文件
-
-	
 	void isfile_exist(const std::string file_buf, int buf_len);//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 
 	std::string open_json_file(const std::string& json_name);//打开指定名称的json文本
@@ -64,7 +61,7 @@ private:
 	void down_load();//把任务放在线程池里向服务器请求下载
 
 public:
-	void send_id_port(const std::string id_port);//发送成为服务器的id ip port 
+	void send_id_port(/*const std::string id_port*/std::size_t id,std::string port);//发送成为服务器的id ip port 
 
 signals:
 
@@ -74,22 +71,6 @@ signals:
 	void sign_down_block(QVariant var,QString loadip, QString loadport);
 
 
-
-//
-//public:
-//	void start_io_pool()
-//	{
-//		pool_thread_block_ptr_.reset(new std::thread([this]
-//			{
-//				this->io_pool_block_.run();
-//			}));
-//	}
-//
-//
-//public:
-//	io_context_pool io_pool_block_;
-//private:
-//	std::shared_ptr<std::thread> pool_thread_block_ptr_;
 private:
 	std::vector<std::shared_ptr<down_block_client>> down_block_list_;
 

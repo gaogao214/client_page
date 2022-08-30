@@ -32,6 +32,15 @@ public:
 		//socket_.async_write_some(asio::buffer(buffer), std::forward<_Handle>(handle));
 	}
 
+	template<typename _Request, typename _Handle>
+	void async_write(_Request&& req, _Handle&& handle)
+	{
+		std::array<char, 1024> arr{};
+		req.to_bytes(arr);
+
+		async_write(arr, std::forward<_Handle>(handle));
+	}
+
 	void close()
 	{
 		socket_.close();

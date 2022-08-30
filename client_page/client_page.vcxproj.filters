@@ -87,9 +87,6 @@
     <ClInclude Include="io_context_pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="down_block_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wget_c_file_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -97,6 +94,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="basic_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="request.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="response.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -109,5 +112,11 @@
     <QtMoc Include="down_json_client.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="down_block_client.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
