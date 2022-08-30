@@ -61,10 +61,9 @@ private:
 
 	void save_file(const std::string& name, const std::string& file_buf);//保存内容
 
-	void down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const std::string& down_id);//连接下载文件的端口
-
 	void down_load();//把任务放在线程池里向服务器请求下载
 
+public:
 	void send_id_port(const std::string id_port);//发送成为服务器的id ip port 
 
 signals:

@@ -1,6 +1,6 @@
 #include "down_json_client.h"
 #include "down_block_client.h"
-//#include "file_server.h"
+#include "file_server.h"
 
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
@@ -8,6 +8,8 @@ filestruct::files_info files_inclient;//解析客户端本地的json文本
 
 void down_json_client::receive_buffer(std::size_t length)
 {
+	
+
 	std::string str(buffer_.data(),length);
 	std::string buf = str.substr(1);
 	auto pos = buf.find_first_of("*");
@@ -134,39 +136,6 @@ void down_json_client::save_file(const std::string& name, const std::string& fil
 
 }
 
-void down_json_client::down_json_run(filestruct::block Files, std::string loadip, std::string loadport, const std::string& down_id)//连接下载文件的端口
-{
-	try {
-		
-		//QVariant var;
-		//var.setValue(Files);
-		//
-		//QString ip = QString::fromStdString(loadip);
-		//QString port = QString::fromStdString(loadport);
-
-		//emit sign_down_block(var,ip, port);
-		parse_client_list_json("list.json");
-		asio::ip::tcp::resolver resolver(get_io_context());
-
-		auto endpoints = resolver.resolve(loadip, loadport);
-
-		///*bck = file_names.value<filestruct::block>();
-		//*/
-		auto down_block_ptr_ = std::make_shared<down_block_client>(get_io_context(), endpoints, Files);
-
-		down_block_list_.push_back(down_block_ptr_);
-
-		
-		down_block_ptr_->send_filename();
-	}
-	catch (...)
-	{
-		parse_down_jsonfile(down_json_name);
-		/*while (!*/send_id_port(down_id + "," + downfile_path.port);//)
-		//	continue;
-	}
-}
-
 
 void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 {
@@ -206,6 +175,7 @@ void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 				
 				//pool.enqueue(bind(&down_json_client::down_json_run, this, blks.blocks_[iter.blockid], it->second.server.back().ip, it->second.server.back().port, std::to_string(iter.blockid)));
 				
+		
 				QVariant var;
 				var.setValue(blks.blocks_[iter.blockid]);
 		

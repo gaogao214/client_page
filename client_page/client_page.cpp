@@ -101,18 +101,25 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	//if(down_block_ptr_==nullptr)
 	auto down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
 	
-down_block_ptr_->send_filename();
 
-	down_blocks_.push_back(down_block_ptr_);
+
 	qRegisterMetaType<std::size_t>("std:::size_t");
 
 	QMetaObject::Connection connecthanndle_ = connect(down_block_ptr_.get(), SIGNAL(signal_get_id_port_externl(std::size_t, QString)), SLOT(send_get_id_port_for_server(std::size_t, QString)), Qt::DirectConnection);
-
 	if (connecthanndle_)
 	{
 		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
-
 	}
+
+
+
+
+
+
+
+down_block_ptr_->send_filename();
+
+	down_blocks_.push_back(down_block_ptr_);
 
 
 	/*QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_ptr_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
