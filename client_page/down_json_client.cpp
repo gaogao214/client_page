@@ -232,7 +232,7 @@ void down_json_client::send_id_port(/*const std::string id_port*/std::size_t id,
 	req.body_.id_ = id;
 	req.body_.set_port(port);
 	
-	this->async_write(req, [this](std::error_code ec, std::size_t)
+	this->async_write(std::move(req), [this](std::error_code ec, std::size_t)
 		{
 			std::cout << ec << std::endl;
 			if (!ec)

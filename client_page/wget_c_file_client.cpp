@@ -18,7 +18,7 @@ void wget_c_file_client::do_send_wget_file_name_text()
 	//memcpy(send_name.data(), &list_name_len, sizeof(size_t));
 	//sprintf(&send_name[sizeof(size_t)], "%s", wget_c_name.c_str());
 
-	this->async_write(/*send_name*/req, [this](std::error_code ec, std::size_t sz)
+	this->async_write(/*send_name*/std::move(req), [this](std::error_code ec, std::size_t sz)
 		{
 			if (!ec)
 			{

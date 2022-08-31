@@ -48,7 +48,7 @@ void down_block_client::send_filename()
 
 
 //		this->async_write(req.to_bytes(req.header_), [name, this](std::error_code ec, std::size_t)
-		this->async_write(req,[name, this](std::error_code ec, std::size_t)
+		this->async_write(std::move(req),[name, this](std::error_code ec, std::size_t)
 		{
 			if (!ec)
 			{
@@ -94,7 +94,7 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅÐ¶
 void down_block_client::recive_file_text(size_t recive_len)
 {
 	id_text_response resp;
-	resp.parse_bytes(buffer_);
+	resp.parse_bytes(buffer_.data());
 	read_name=resp.header_.name_;
 	id_num = resp.body_.id_;
 	/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
