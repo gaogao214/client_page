@@ -1,7 +1,7 @@
 #include "down_block_client.h"
 #include "file_server.h"
 #include "request.hpp"
-
+#include "response.hpp"
 
 
 filestruct::wget_c_file_info down_block_client::wcfi_copy ;
@@ -36,19 +36,29 @@ void down_block_client::send_filename()
 		std::size_t str_len = str.size();
 
 
-		//request req;
-		//req.header_.id_ = blk.id;
-		//memcpy(req.header_.name_,&name,name.size());
 		
+		id_name_request req;
+		req.body_.id_=blk.id;
+		req.body_.set_name(name);
 
-		file_name.resize(sizeof(size_t) + str_len);
-		//std::memcpy(file_name.data(), &str_len, sizeof(size_t));
-		sprintf(&file_name[0], "%s", str.data());
+
+		//file_name.resize(sizeof(size_t) + str_len);
+		////std::memcpy(file_name.data(), &str_len, sizeof(size_t));
+		//sprintf(&file_name[0], "%s", str.data());
 
 
 //		this->async_write(req.to_bytes(req.header_), [name, this](std::error_code ec, std::size_t)
+		this->async_write(req,[name, this](std::error_code ec, std::size_t)
+		{
+			if (!ec)
+			{
+				does_the_folder_exist(name);
+				OutputDebugStringA(name.data());
+				OutputDebugString(L"\n");
 
-		this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
+			}
+		});
+		/*this->async_write(file_name, [name, this](std::error_code ec, std::size_t)
 			{
 				if (!ec)
 				{
@@ -57,7 +67,7 @@ void down_block_client::send_filename()
 					OutputDebugString(L"\n");
 				
 				}
-			});
+			});*/
 
 	}
 }
@@ -83,23 +93,31 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅĞ¶
 
 void down_block_client::recive_file_text(size_t recive_len)
 {
-
-
-	std::string str(buffer_.data(), recive_len);
-	/*std::string*/ id = str.substr(0, 1);
-	/*std::string*/ read_name = str.substr(1,16);      //Ãû×Ö
+	id_text_response resp;
+	resp.parse_bytes(buffer_);
+	read_name=resp.header_.name_;
+	id_num = resp.body_.id_;
 	/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
-	std::string total_num = str.substr(17,8);       // ×ÜĞòºÅ
-	std::size_t total_num_{};
-	std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
+	auto total_num = resp.header_.totoal_;
+	std::string text_ = resp.body_.text_;
 
-	std::string text_ = str.substr(25);           //ÄÚÈİ
 
-	/*size_t*/ id_num = atoi(id.data());
+
+	//std::string str(buffer_.data(), recive_len);
+	///*std::string*/ id = str.substr(0, 1);
+	///*std::string*/ read_name = str.substr(1,16);      //Ãû×Ö
+	///*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
+	//std::string total_num = str.substr(17,8);       // ×ÜĞòºÅ
+	//std::size_t total_num_{};
+	//std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
+
+	//std::string text_ = str.substr(25);           //ÄÚÈİ
+
+	///*size_t*/ id_num = atoi(id.data());
 
 	//id_to_the_files[id_num].push_back(read_name);        //±£´æ id ºÅ  Óë Ãû×Ö   ÓÃÀ´ÅĞ¶Ïid¿éÎÄ¼şÊÇ·ñÏÂÔØÍê
 	
-	map_.emplace(read_name, total_num_);        
+	map_.emplace(read_name, total_num);
 	std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
 
 
@@ -130,9 +148,9 @@ void down_block_client::recive_file_text(size_t recive_len)
 
 }
 
-int down_block_client::read_handle(std::size_t bytes_transferred)
+int down_block_client::read_handle(uint32_t id)
 {
-	recive_file_text(bytes_transferred);
+	recive_file_text(id);
 
 	return 0;
 }

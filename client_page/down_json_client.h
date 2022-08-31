@@ -40,7 +40,7 @@ public:
 	}*/
 
 protected:
-	virtual int read_handle(std::size_t bytes_transferred) override;
+	virtual int read_handle(uint32_t id) override;
 	virtual int read_error() override;
 
 private:
@@ -82,7 +82,7 @@ public:
 
 private:
 	std::string list_name;						//接收llist.json文件名
-	std::string id_name_text;					//接收id.json文件名
+	std::string id_;					//接收id.json文件名
 
 	filestruct::files_info files_inserver;		//解析服务器的json文本
 

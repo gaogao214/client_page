@@ -2,6 +2,7 @@
 #include "down_json_client.h"
 #include "down_block_client.h"
 #include "file_server.h"
+#include "response.hpp"
 
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//解析客户端本地的json文本
@@ -47,10 +48,40 @@ void down_json_client::receive_buffer(std::size_t length)
 	
 }
 
-int down_json_client::read_handle(std::size_t bytes_transferred)
+int down_json_client::read_handle(uint32_t id)
 {
+	//构造response
+	switch (id)
+	{
+	case 1001:
+		
+		name_text_response resp;
 
-	receive_buffer(bytes_transferred);
+		resp.parse_bytes(buffer_);
+
+		if (resp.body_.name_ == "list.json")
+		{
+			parse_server_list_json(resp.body_.text_);
+			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
+		}
+		if (resp.body_.name_ == "id.json")
+		{
+			save_file(resp.body_.name_, resp.body_.text_);//保存内容
+			parse_block_json(resp.body_.text_);
+			down_load();//把任务放在线程池里向服务器请求下载
+
+		}
+
+		break;
+	/*case 1003:
+		break;*/
+	/*default:
+		break;*/
+	}
+
+
+
+	//receive_buffer(bytes_transferred);
 
 
 	//if (func_)
@@ -190,23 +221,32 @@ void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 
 void down_json_client::send_id_port(/*const std::string id_port*/std::size_t id, std::string port)//发送成为服务器的id ip port 
 {
-	id_port_request req;
-	req.body_.id_ = id;
-	req.body_.set_port(port);
 	
+	//
 	//std::size_t id_port_len = id_port.size();//id ip port字符串大小                       
 	//id_port_buf.resize(sizeof(size_t) + id_port_len);//给id_port_buf分配sizeof(size_t) + id_port_len的长度
 	//std::memcpy(id_port_buf.data(), &id_port_len, sizeof(size_t));
 	//sprintf(&id_port_buf[sizeof(size_t)], "%s", id_port.c_str());//把文件名赋给&Id_IP_Port_buf[10]
 	
-
-	this->async_write(std::move(req), [this](std::error_code ec, std::size_t)
-	//this->async_write(id_port_buf, [this, id_port_len, id_port](std::error_code ec, std::size_t)
+	id_port_request req;
+	req.body_.id_ = id;
+	req.body_.set_port(port);
+	
+	this->async_write(req, [this](std::error_code ec, std::size_t)
+		{
+			std::cout << ec << std::endl;
+			if (!ec)
+			{
+				
+			}
+		}); 
+	//this->async_write(std::move(req), [this](std::error_code ec, std::size_t)
+	/*this->async_write(id_port_buf, [this, id_port_len, id_port](std::error_code ec, std::size_t)
 		{
 			std::cout << ec << std::endl;
 			if (!ec)
 			{
 				std::cout << "发送给服务器  id ip port:  " << id_port_buf << std::endl;
 			}
-		});
+		});*/
 }

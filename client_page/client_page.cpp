@@ -141,7 +141,7 @@ void client_page::wget_c_file_()
 	asio::ip::tcp::resolver resolver_(io_pool_.get_io_context());
 	auto endpoint_ = resolver_.resolve( "127.0.0.1","12313" );
 	m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_/*,this*/);
-	m_wget_c_file_->do_send_wget_file_name();
+	m_wget_c_file_->do_send_wget_file_name_text();
 	//QMetaObject::Connection connecthanndle_pro_bar = connect(m_wget_c_file_.get(), SIGNAL(sign_wget_c_file_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
 	//if (connecthanndle_pro_bar)
 	//{

@@ -29,7 +29,7 @@ public:
 
 protected:
 
-	virtual int read_handle(std::size_t bytes_transferred) override;
+	virtual int read_handle(uint32_t id) override;
 	virtual int read_error() override;
 
 public:
