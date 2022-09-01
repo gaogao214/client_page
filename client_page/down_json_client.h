@@ -32,8 +32,7 @@ public:
 
 public:
 
-	void receive_buffer(std::size_t length);
-
+	
 	/*void set_funtion(std::function<void()>&& func)
 	{
 		func_.swap(func);
@@ -44,19 +43,19 @@ protected:
 	virtual int read_error() override;
 
 private:
-	void  parse_server_list_json(std::string text_json);//打开list_json   json文件  解析json文件
+	void  parse_server_list_json(const char* text_json);//打开list_json   json文件  解析json文件
 	
 	void  parse_down_jsonfile(std::string name);//打开配置文件，并找到配置文件中的路径,查看路径下的文件或文件名   解析json文件
 
-	void  parse_block_json(std::string text_json);//打开list_json   json文件  解析json文件
+	void  parse_block_json(const char* text_json);//打开list_json   json文件  解析json文件
 
 	void parse_client_list_json(std::string name);//打开list_json   json文件  解析json文件
 
-	void isfile_exist(const std::string file_buf, int buf_len);//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
+	void isfile_exist(const char* file_buf, int buf_len);//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 
 	std::string open_json_file(const std::string& json_name);//打开指定名称的json文本
 
-	void save_file(const std::string& name, const std::string& file_buf);//保存内容
+	void save_file(const char* name, const char* file_buf);//保存内容
 
 	void down_load();//把任务放在线程池里向服务器请求下载
 
@@ -90,9 +89,9 @@ private:
 	filestruct::blocks_for_download blks;		//存一个块id的文件名
 
 
-	std::string list_json = "list.json";
-	std::string id_json = "id.json";
-	std::string down_json_name = "down.json";
+	char list_json[32] = "list.json";
+	char id_json[32] = "id.json";
+	char down_json_name[32] = "down.json";
 
 	volatile int len = 0;
 	std::unordered_map<int, int> id_index;		//一共的id  数量

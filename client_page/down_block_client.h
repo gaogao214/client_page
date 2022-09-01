@@ -25,7 +25,7 @@ public:
 
 	void send_filename();
 
-	void recive_file_text(size_t recive_len);
+	void recive_file_text(uint32_t id);
 
 protected:
 

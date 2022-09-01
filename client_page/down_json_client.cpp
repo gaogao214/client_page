@@ -3,50 +3,11 @@
 #include "down_block_client.h"
 #include "file_server.h"
 #include "response.hpp"
-
+#include <string.h>
 filestruct::profile downfile_path;
 filestruct::files_info files_inclient;//½âÎö¿Í»§¶Ë±¾µØµÄjsonÎÄ±¾
 		
 
-void down_json_client::receive_buffer(std::size_t length)
-{
-	
-
-	std::string str(buffer_.data(),length);
-	std::string buf = str.substr(1);
-	auto pos = buf.find_first_of("*");
-	auto name = buf.substr(0, pos);
-
-	emit sign_file_name(name.data());
-
-	auto text = buf.substr(pos + 1);
-
-	emit sign_pro_bar(length, length);
-	char flag = buffer_[0];
-	switch (flag)
-	{
-	case '0':
-	{
-		//´¦ÀíËùÓĞµÄbuffer_
-		parse_server_list_json(text);
-		isfile_exist(text, text.size());//ÅĞ¶Ïlist.jsonÎÄ¼şÊÇ·ñ´æÔÚ,´æÔÚ¾Í½âÎöjsonÎÄ±¾ÓëserverµÄjson½øĞĞ±È½Ï£¬²»´æÔÚ¾Í±£´æÎÄ¼ş
-
-	}
-	break;
-	case '1':
-		
-		save_file(name, text);//±£´æÄÚÈİ
-		parse_block_json(text);
-		down_load();//°ÑÈÎÎñ·ÅÔÚÏß³Ì³ØÀïÏò·şÎñÆ÷ÇëÇóÏÂÔØ
-
-		break;
-	default:
-		break;
-	}
-
-	
-	
-}
 
 int down_json_client::read_handle(uint32_t id)
 {
@@ -56,15 +17,18 @@ int down_json_client::read_handle(uint32_t id)
 	case 1001:
 		
 		name_text_response resp;
-
+		char list_name[32] = "list.json";
+		char id_name[32] = "id.json";
 		resp.parse_bytes(buffer_);
 
-		if (resp.body_.name_ == "list.json")
+		int list_ = strcmp(resp.body_.name_, list_name);
+		int id_ = strcmp(resp.body_.name_, id_name);
+		if (list_==0)
 		{
 			parse_server_list_json(resp.body_.text_);
 			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));//ÅĞ¶Ïlist.jsonÎÄ¼şÊÇ·ñ´æÔÚ,´æÔÚ¾Í½âÎöjsonÎÄ±¾ÓëserverµÄjson½øĞĞ±È½Ï£¬²»´æÔÚ¾Í±£´æÎÄ¼ş
 		}
-		if (resp.body_.name_ == "id.json")
+		if (id_==0)
 		{
 			save_file(resp.body_.name_, resp.body_.text_);//±£´æÄÚÈİ
 			parse_block_json(resp.body_.text_);
@@ -79,11 +43,6 @@ int down_json_client::read_handle(uint32_t id)
 		break;*/
 	}
 
-
-
-	//receive_buffer(bytes_transferred);
-
-
 	//if (func_)
 	//	func_();
 
@@ -97,9 +56,9 @@ int down_json_client::read_error()
 	return 0;
 }
 
-void  down_json_client::parse_server_list_json(std::string text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
+void  down_json_client::parse_server_list_json(const char* text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
 {
-	files_inserver.deserializeFromJSON(text_json.c_str());
+	files_inserver.deserializeFromJSON(text_json);
 }
 
 void  down_json_client::parse_down_jsonfile(std::string name)//´ò¿ªÅäÖÃÎÄ¼ş£¬²¢ÕÒµ½ÅäÖÃÎÄ¼şÖĞµÄÂ·¾¶,²é¿´Â·¾¶ÏÂµÄÎÄ¼ş»òÎÄ¼şÃû   ½âÎöjsonÎÄ¼ş
@@ -108,9 +67,9 @@ void  down_json_client::parse_down_jsonfile(std::string name)//´ò¿ªÅäÖÃÎÄ¼ş£¬²¢Õ
 	downfile_path.deserializeFromJSON(readbuffer.c_str());
 }
 
-void  down_json_client::parse_block_json(std::string text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
+void  down_json_client::parse_block_json(const char* text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
 {
-	blks_.deserializeFromJSON(text_json.c_str());
+	blks_.deserializeFromJSON(text_json);
 }
 
 void down_json_client::parse_client_list_json(std::string name)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
@@ -120,15 +79,15 @@ void down_json_client::parse_client_list_json(std::string name)//´ò¿ªlist_json  
 }
 
 
-void down_json_client::isfile_exist(const std::string file_buf, int buf_len)//ÅĞ¶Ïlist.jsonÎÄ¼şÊÇ·ñ´æÔÚ,´æÔÚ¾Í½âÎöjsonÎÄ±¾ÓëserverµÄjson½øĞĞ±È½Ï£¬²»´æÔÚ¾Í±£´æÎÄ¼ş
+void down_json_client::isfile_exist(const char* file_buf, int buf_len)//ÅĞ¶Ïlist.jsonÎÄ¼şÊÇ·ñ´æÔÚ,´æÔÚ¾Í½âÎöjsonÎÄ±¾ÓëserverµÄjson½øĞĞ±È½Ï£¬²»´æÔÚ¾Í±£´æÎÄ¼ş
 {
 
 	std::fstream list("list.json", std::ios::binary | std::ios::out | std::ios::app);
 	if (!list.is_open())
 	{
-		while (file_buf.c_str() != nullptr)
+		while (file_buf != nullptr)
 		{
-			list.write(file_buf.c_str(), buf_len);
+			list.write(file_buf, buf_len);
 		}
 		list.flush();
 		list.close();
@@ -157,12 +116,12 @@ std::string down_json_client::open_json_file(const std::string& json_name)//´ò¿ª
 	return content;
 
 }
-void down_json_client::save_file(const std::string& name, const std::string& file_buf)//±£´æÄÚÈİ
+void down_json_client::save_file(const char* name, const char* file_buf)//±£´æÄÚÈİ
 {
 
 	std::ofstream save_file_(name, std::ios::out | std::ios::binary);
 
-	save_file_.write(file_buf.c_str(), strlen(file_buf.c_str()) - len);
+	save_file_.write(file_buf, strlen(file_buf) - len);
 
 	save_file_.close();
 

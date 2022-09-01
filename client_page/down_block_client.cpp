@@ -32,8 +32,8 @@ void down_block_client::send_filename()
 		std::this_thread::sleep_for(200ms);
 
 
-		std::string str = std::to_string(blk.id) + name ;
-		std::size_t str_len = str.size();
+		/*std::string str = std::to_string(blk.id) + name ;
+		std::size_t str_len = str.size();*/
 
 
 		
@@ -91,60 +91,73 @@ void down_block_client::does_the_folder_exist(const std::string& list_name)//ÅĞ¶
 }
 
 
-void down_block_client::recive_file_text(size_t recive_len)
+void down_block_client::recive_file_text(uint32_t id)
 {
-	id_text_response resp;
-	resp.parse_bytes(buffer_.data());
-	read_name=resp.header_.name_;
-	id_num = resp.body_.id_;
-	/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
-	auto total_num = resp.header_.totoal_;
-	std::string text_ = resp.body_.text_;
-
-
-
-	//std::string str(buffer_.data(), recive_len);
-	///*std::string*/ id = str.substr(0, 1);
-	///*std::string*/ read_name = str.substr(1,16);      //Ãû×Ö
-	///*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
-	//std::string total_num = str.substr(17,8);       // ×ÜĞòºÅ
-	//std::size_t total_num_{};
-	//std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
-
-	//std::string text_ = str.substr(25);           //ÄÚÈİ
-
-	///*size_t*/ id_num = atoi(id.data());
-
-	//id_to_the_files[id_num].push_back(read_name);        //±£´æ id ºÅ  Óë Ãû×Ö   ÓÃÀ´ÅĞ¶Ïid¿éÎÄ¼şÊÇ·ñÏÂÔØÍê
-	
-	map_.emplace(read_name, total_num);
-	std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
-
-
-	for (auto iter = map_.begin(); iter != map_.end(); iter++)
+	switch (id)
 	{
-		if (iter->first == read_name )
+	case 1004:
+
+		id_text_response resp;
+		resp.parse_bytes(buffer_.data());
+		std::size_t recive_len = resp.header_.length_;
+		read_name = resp.header_.name_;
+		id_num = resp.body_.id_;
+		/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
+		auto total_num = resp.header_.totoal_;
+		std::string text_ = resp.body_.text_;
+
+
+
+		//std::string str(buffer_.data(), recive_len);
+		///*std::string*/ id = str.substr(0, 1);
+		///*std::string*/ read_name = str.substr(1,16);      //Ãû×Ö
+		///*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
+		//std::string total_num = str.substr(17,8);       // ×ÜĞòºÅ
+		//std::size_t total_num_{};
+		//std::memcpy(&total_num_, total_num.data(), sizeof(std::size_t));
+
+		//std::string text_ = str.substr(25);           //ÄÚÈİ
+
+		///*size_t*/ id_num = atoi(id.data());
+
+		//id_to_the_files[id_num].push_back(read_name);        //±£´æ id ºÅ  Óë Ãû×Ö   ÓÃÀ´ÅĞ¶Ïid¿éÎÄ¼şÊÇ·ñÏÂÔØÍê
+
+		map_.emplace(read_name, total_num);
+		std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
+
+
+		for (auto iter = map_.begin(); iter != map_.end(); iter++)
 		{
-
-			recive_len = recive_len - 8 - 16 ;
-			file.write(text_.data(), recive_len);
-			++count;
-
-			if (iter->second == count)
+			if (iter->first == read_name)
 			{
 
-				file.close();
-				//ÏÂÔØÍê Ò»¸öidºÅµÄÎÄ¼ş   ¿Í»§¶Ë±ä³É·şÎñÆ÷
-				
-				save_location(file_path_, read_name,id_num);
-				//emit signal_get_server_id_port(id_num, "12314");
+				/*recive_len = recive_len - 8 - 16 ;*/
+				file.write(text_.data(), recive_len);
+				++count;
 
-				//Sleep(10);
-				count = 0;
+				if (iter->second == count)
+				{
+
+					file.close();
+					//ÏÂÔØÍê Ò»¸öidºÅµÄÎÄ¼ş   ¿Í»§¶Ë±ä³É·şÎñÆ÷
+
+					save_location(file_path_, read_name, id_num);
+					//emit signal_get_server_id_port(id_num, "12314");
+
+					//Sleep(10);
+					count = 0;
+				}
+
 			}
-				
 		}
+
+
+
+		break;
+
 	}
+
+
 
 }
 

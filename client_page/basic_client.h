@@ -35,17 +35,15 @@ public:
 	{
 
 		constexpr auto id = _Request::Number;
-		std::array<char, 1024> arr{};
+		std::array<char, 8192+sizeof(uint32_t)> arr{};
 		std::memcpy(arr.data(), &id, sizeof(uint32_t));
 
 		req.to_bytes(arr.data() + sizeof(uint32_t));
 
-	/*	async_write(arr, std::forward<_Handle>(handle));*/
-
-
-		//req.to_bytes(arr);
-
 		async_write(arr, std::forward<_Handle>(handle));
+
+
+	
 
 	/*	std::array<char, 1024> arr{};
 		req.to_bytes(arr);
