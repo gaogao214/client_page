@@ -13,7 +13,7 @@
 #include "io_context_pool.h"
 class down_block_client;
 extern  filestruct::profile downfile_path;      //配置文件
-extern  filestruct::files_info files_inclient;	//解析客户端本地的json文本
+//extern  filestruct::files_info files_inclient;	//解析客户端本地的json文本
 
 
 Q_DECLARE_METATYPE(filestruct::block)

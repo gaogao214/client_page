@@ -180,19 +180,18 @@ int down_block_client::read_error()
 	{
 		wcf.wget_name = iter.wget_name;
 		wcf.offset = iter.offset;
-		wcfi_copy.wget_c_file_list.emplace(wcf);
-		//wcfi_copy.wget_c_file_list.push_back(wcf);
+		//wcfi_copy.wget_c_file_list.emplace(wcf);
+		wcfi_copy.wget_c_file_list.push_back(wcf);
 	}
 	save_location_connect_error(file_path_, read_name/*,id_num*/);
 
-	Breakpoint_location();
+	//Breakpoint_location();
 
 	return 0;
 }
 
 void down_block_client::save_location_connect_error(const std::string& name,const std::string& no_path_name)
 {
-
 
 	ifstream id_File(name, ios::binary);
 	id_File.seekg(0, ios_base::end);
@@ -205,13 +204,34 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 
 	write_mtx_.lock();
 
-	wcfi_copy.wget_c_file_list.emplace(wcf);
-	//wcfi_copy.wget_c_file_list.push_back(wcf);
+	//wcfi_copy.wget_c_file_list.emplace(wcf);
+	wcfi_copy.wget_c_file_list.push_back(wcf);
 
 	write_mtx_.unlock();
 
-	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
+	parse_client_list_json("list.json");
+	/*把断点后的文件名也保存在wget_c_file中*/
+	for (auto& iter : files_inclient.file_list)
+	{
+
+		//在本地list.json文本里找到和服务端相同的名字
+		auto it_client = std::find_if(wcfi_copy.wget_c_file_list.begin(), wcfi_copy.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
+		if (it_client == wcfi_copy.wget_c_file_list.end())//如果没有找到名字，就把文件名添加到wget_c_file这个文件中
+		{
+			if (iter.path.empty())
+				continue;
+
+			wcf.wget_name = iter.path;
+			wcf.offset = 0;
+			//wcfi_copy.wget_c_file_list.emplace(wcf);
+			wcfi_copy.wget_c_file_list.push_back(wcf);
+		}
+	}
+	
+	
+	save_wget_c_file_json(wcfi_copy, "wget_c_file.json");
+	return ;
 }
 
 //断开再连接时     wcfi 清空  断开连接时，保存到一个文件中 ，连接时，先读这个文件   再把这个保存到别的文件中
@@ -231,8 +251,8 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	write_mtx_.lock();
 
-	wcfi_copy.wget_c_file_list.emplace(wcf);
-	//wcfi_copy.wget_c_file_list.push_back(wcf);
+	//wcfi_copy.wget_c_file_list.emplace(wcf);
+	wcfi_copy.wget_c_file_list.push_back(wcf);
 
 	write_mtx_.unlock();
 
@@ -273,8 +293,8 @@ void down_block_client::Breakpoint_location()
 
 			wcf.wget_name = iter.path;
 			wcf.offset = 0;
-			wcfi_copy.wget_c_file_list.emplace(wcf);
-			//wcfi_copy.wget_c_file_list.push_back(wcf);
+			//wcfi_copy.wget_c_file_list.emplace(wcf);
+			wcfi_copy.wget_c_file_list.push_back(wcf);
 		}
 	}
 	save_wget_c_file_json(wcfi_copy, "wget_c_file.json");
@@ -297,6 +317,7 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 	fflush(file);
 	fclose(file);
 
+	return;
 
 }
 

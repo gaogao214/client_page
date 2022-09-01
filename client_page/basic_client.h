@@ -74,6 +74,7 @@ private:
 			{
 				if (ec)
 				{
+					
 					return;
 				}
 
@@ -90,9 +91,8 @@ private:
 			{
 				if (ec)
 				{
-					do_read_header();
-
 					read_error();
+					close();
 					return ;
 				}
 
@@ -113,8 +113,9 @@ private:
 			{
 				if (ec)
 				{
+					
 					//read_handle(id);
-					do_read_header();
+					//do_read_header();
 					return;
 				}
 

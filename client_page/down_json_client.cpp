@@ -5,8 +5,8 @@
 #include "response.hpp"
 #include <string.h>
 filestruct::profile downfile_path;
-filestruct::files_info files_inclient;//½âÎö¿Í»§¶Ë±¾µØµÄjsonÎÄ±¾
-		
+//filestruct::files_info files_inclient;//½âÎö¿Í»§¶Ë±¾µØµÄjsonÎÄ±¾
+//		
 
 
 int down_json_client::read_handle(uint32_t id)
@@ -59,6 +59,11 @@ int down_json_client::read_error()
 	return 0;
 }
 
+void down_json_client::parse_client_list_json(std::string name)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
+{
+	std::string readbuffer = open_json_file(name);
+	files_inclient.deserializeFromJSON(readbuffer.c_str());
+}
 void  down_json_client::parse_server_list_json(const char* text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
 {
 	files_inserver.deserializeFromJSON(text_json);
@@ -70,15 +75,9 @@ void  down_json_client::parse_down_jsonfile(std::string name)//´ò¿ªÅäÖÃÎÄ¼ş£¬²¢Õ
 	downfile_path.deserializeFromJSON(readbuffer.c_str());
 }
 
-void  down_json_client::parse_block_json(const char* text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
+void down_json_client::parse_block_json(const char* text_json)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
 {
 	blks_.deserializeFromJSON(text_json);
-}
-
-void down_json_client::parse_client_list_json(std::string name)//´ò¿ªlist_json   jsonÎÄ¼ş  ½âÎöjsonÎÄ¼ş
-{
-	std::string readbuffer = open_json_file(name);
-	files_inclient.deserializeFromJSON(readbuffer.c_str());
 }
 
 
