@@ -7,7 +7,6 @@
 
 class basic_client:public QObject
 {
-	//Q_OBJECT
 public:
 	explicit basic_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		:io_context_(io_context)
@@ -42,13 +41,6 @@ public:
 
 		async_write(arr, std::forward<_Handle>(handle));
 
-
-	
-
-	/*	std::array<char, 1024> arr{};
-		req.to_bytes(arr);
-
-		async_write(arr, std::forward<_Handle>(handle));*/
 	}
 
 	void close()
@@ -77,8 +69,6 @@ private:
 					
 					return;
 				}
-
-				//emit signal_connect();
 				do_read_header();
 			});
 	}
@@ -113,25 +103,19 @@ private:
 			{
 				if (ec)
 				{
-					
-					//read_handle(id);
+				
 					//do_read_header();
 					return;
 				}
-
-				/*	*/
-
+		
 				read_handle(id);
 				buffer_.fill(0);
-
-				//std::memset(buffer_.data(), 0, 4096);//Çå¿ÕÄÚ´æ
+			
 				do_read_header();
 			});
 	}
 
-
 protected:
-	//std::array<char, 4096> buffer_;
 	std::array<char, 8192+1024> buffer_;
 
 private:
