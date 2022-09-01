@@ -17,7 +17,7 @@ public:
 
 	//void do_send_wget_file_name_offset();//发送断点续传的内容
 
-	void do_recive_wget_file(std::size_t len);
+	void do_recive_wget_file(uint32_t id);
 
 protected:
 	virtual int read_handle(uint32_t id) override;

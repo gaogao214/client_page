@@ -60,11 +60,13 @@ namespace filestruct {
 	{
 		std::string wget_name;
 		uint32_t offset;
+		bool operator<(const wget_c_file& b)const { return  offset < b.offset; }
 		GX_JSON(wget_name, offset);
 	};
 	struct wget_c_file_info
 	{
-		std::vector<wget_c_file> wget_c_file_list;
+		//std::vector<wget_c_file> wget_c_file_list;
+		std::set<wget_c_file> wget_c_file_list;
 		GX_JSON(wget_c_file_list);
 	};
 }

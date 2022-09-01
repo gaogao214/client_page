@@ -25,11 +25,14 @@ int down_json_client::read_handle(uint32_t id)
 		int id_ = strcmp(resp.body_.name_, id_name);
 		if (list_==0)
 		{
+			OutputDebugString(L"list.json 接收成功\n");
 			parse_server_list_json(resp.body_.text_);
 			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 		}
 		if (id_==0)
 		{
+			OutputDebugString(L"id.json 接收成功\n");
+
 			save_file(resp.body_.name_, resp.body_.text_);//保存内容
 			parse_block_json(resp.body_.text_);
 			down_load();//把任务放在线程池里向服务器请求下载

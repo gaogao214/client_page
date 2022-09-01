@@ -35,7 +35,7 @@ public:
 	{
 
 		constexpr auto id = _Request::Number;
-		std::array<char, 8192+sizeof(uint32_t)> arr{};
+		std::array<char, 8192+sizeof(uint32_t)+1024> arr{};
 		std::memcpy(arr.data(), &id, sizeof(uint32_t));
 
 		req.to_bytes(arr.data() + sizeof(uint32_t));
@@ -74,7 +74,7 @@ private:
 			{
 				if (ec)
 				{
-					read_error();
+					return;
 				}
 
 				//emit signal_connect();
@@ -90,6 +90,8 @@ private:
 			{
 				if (ec)
 				{
+					do_read_header();
+
 					read_error();
 					return ;
 				}
@@ -110,7 +112,13 @@ private:
 			[&, this](std::error_code ec, std::size_t bytes_transferred)
 			{
 				if (ec)
+				{
+					//read_handle(id);
+					do_read_header();
 					return;
+				}
+
+				/*	*/
 
 				read_handle(id);
 				buffer_.fill(0);

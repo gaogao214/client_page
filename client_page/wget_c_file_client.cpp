@@ -52,7 +52,7 @@ void wget_c_file_client::do_send_wget_file_name_text()
 //	 
 //}
 
-void wget_c_file_client::do_recive_wget_file(std::size_t len)
+void wget_c_file_client::do_recive_wget_file(uint32_t id )
 {
 	//std::string recive_wget_buf(buffer_.data(),len);
 
@@ -67,43 +67,47 @@ void wget_c_file_client::do_recive_wget_file(std::size_t len)
 	//std::size_t offset_num_{};
 	//std::memcpy(&tatal_num_,total_num.data(),sizeof(size_t));   //总序号
 	//std::memcpy(&offset_num_, offset_.data(), sizeof(size_t));   //偏移量
-
-	offset_text_response resp;
-	resp.parse_bytes(buffer_);
-	auto name = resp.header_.name_;
-	auto total_num = resp.header_.totoal_;
-	auto offset_ = resp.body_.offset_;
-	auto text = resp.body_.text_;
-
-	name_num_map_.emplace(name, total_num);
-
-	std::string file_name = downfile_path.path + "\\" + name;
-
-
-	std::ofstream file(file_name.data(), std::ios::out | std::ios::binary | std::ios::app);
-	
-	for (auto iter = name_num_map_.begin(); iter != name_num_map_.end(); iter++)
+	switch (id)
 	{
-		if (iter->first == name)
+	case 1005:
+		offset_text_response resp;
+		resp.parse_bytes(buffer_);
+		auto len = resp.header_.length_;
+		auto name = resp.header_.name_;
+		auto total_num = resp.header_.totoal_;
+		auto offset_ = resp.body_.offset_;
+		auto text = resp.body_.text_;
+
+		name_num_map_.emplace(name, total_num);
+
+		std::string file_name = downfile_path.path + "\\" + name;
+
+
+		std::ofstream file(file_name.data(), std::ios::out | std::ios::binary | std::ios::app);
+
+		for (auto iter = name_num_map_.begin(); iter != name_num_map_.end(); iter++)
 		{
-			std::size_t dowm_size = len - 8 - 8 - 8;
-
-			file.seekp(offset_, std::ios::beg);
-
-			file.write(text, dowm_size);
-			++count;
-
-			if (iter->second == count)
+			if (iter->first == name)
 			{
-				file.close();
+				/*std::size_t dowm_size = len - 8 - 8 - 8;*/
 
+				file.seekp(offset_, std::ios::beg);
+
+				file.write(text, len);
+				++count;
+
+				if (iter->second == count)
+				{
+					file.close();
+
+				}
 			}
+
 		}
 
+		break;
 	}
-	
 
-	std::cout << file_name << "文件接收成功\n";
 }
 
 int wget_c_file_client::read_handle(uint32_t id)

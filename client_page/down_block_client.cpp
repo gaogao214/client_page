@@ -98,8 +98,11 @@ void down_block_client::recive_file_text(uint32_t id)
 	case 1004:
 
 		id_text_response resp;
+		std::memset(resp.header_.name_, 0, 32);//清空内存
+
 		resp.parse_bytes(buffer_.data());
 		std::size_t recive_len = resp.header_.length_;
+
 		read_name = resp.header_.name_;
 		id_num = resp.body_.id_;
 		/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
@@ -177,15 +180,39 @@ int down_block_client::read_error()
 	{
 		wcf.wget_name = iter.wget_name;
 		wcf.offset = iter.offset;
-		wcfi_copy.wget_c_file_list.push_back(wcf);
+		wcfi_copy.wget_c_file_list.emplace(wcf);
+		//wcfi_copy.wget_c_file_list.push_back(wcf);
 	}
-	save_location(file_path_, read_name,id_num);
+	save_location_connect_error(file_path_, read_name/*,id_num*/);
 
 	Breakpoint_location();
 
 	return 0;
 }
 
+void down_block_client::save_location_connect_error(const std::string& name,const std::string& no_path_name)
+{
+
+
+	ifstream id_File(name, ios::binary);
+	id_File.seekg(0, ios_base::end);
+	size_t file_size = id_File.tellg();//文本的大小
+	id_File.seekg(0, ios_base::beg);
+
+
+	wcf.wget_name = no_path_name;
+	wcf.offset = file_size;
+
+	write_mtx_.lock();
+
+	wcfi_copy.wget_c_file_list.emplace(wcf);
+	//wcfi_copy.wget_c_file_list.push_back(wcf);
+
+	write_mtx_.unlock();
+
+	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
+
+}
 
 //断开再连接时     wcfi 清空  断开连接时，保存到一个文件中 ，连接时，先读这个文件   再把这个保存到别的文件中
 //保存到wget_c_file文件中 下载完成的文件名  和偏移量
@@ -204,7 +231,8 @@ void down_block_client::save_location(const string& name, const string& no_path_
 
 	write_mtx_.lock();
 
-	wcfi_copy.wget_c_file_list.push_back(wcf);
+	wcfi_copy.wget_c_file_list.emplace(wcf);
+	//wcfi_copy.wget_c_file_list.push_back(wcf);
 
 	write_mtx_.unlock();
 
@@ -245,7 +273,8 @@ void down_block_client::Breakpoint_location()
 
 			wcf.wget_name = iter.path;
 			wcf.offset = 0;
-			wcfi_copy.wget_c_file_list.push_back(wcf);
+			wcfi_copy.wget_c_file_list.emplace(wcf);
+			//wcfi_copy.wget_c_file_list.push_back(wcf);
 		}
 	}
 	save_wget_c_file_json(wcfi_copy, "wget_c_file.json");

@@ -71,6 +71,8 @@ public:
 	}
 	static void save_location(const std::string& name, const std::string& no_path_add_name,std::size_t id_num);    /*记录暂停下载时的  文件名以及偏移量  */
 
+	void save_location_connect_error(const std::string& name, const std::string& no_path_add_name);
+
 	static void save_wget_c_file_json(filestruct::wget_c_file_info wcfi, /*const */std::string name);
 
 	void Breakpoint_location();    /*记录暂停下载时的  文件名以及偏移量  */
