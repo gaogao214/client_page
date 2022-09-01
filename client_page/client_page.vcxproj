@@ -61,7 +61,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>E:\Object_gao\File_up_download\profile\Asio;E:\Object_gao\File_up_download\profile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Object_gao\File_up_download\profile\Asio;E:\Object_gao\File_up_download\profile\include;E:\Object_gao\File_up_download\qt_object\share;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <ConformanceMode>Default</ConformanceMode>
@@ -116,9 +116,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\server_page\server_page\common.h" />
     <ClInclude Include="..\..\server_page\server_page\GxJsonUtility.h" />
+    <ClInclude Include="..\..\share\request.hpp" />
+    <ClInclude Include="..\..\share\response.hpp" />
     <ClInclude Include="file_struct.h" />
-    <ClInclude Include="request.hpp" />
-    <ClInclude Include="response.hpp" />
     <ClInclude Include="wget_c_file_client.h" />
     <ClInclude Include="basic_client.h" />
     <QtMoc Include="down_block_client.h" />

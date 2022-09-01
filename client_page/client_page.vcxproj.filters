@@ -96,10 +96,10 @@
     <ClInclude Include="basic_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="request.hpp">
+    <ClInclude Include="..\..\share\request.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="response.hpp">
+    <ClInclude Include="..\..\share\response.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
