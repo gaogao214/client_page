@@ -66,7 +66,7 @@ private:
 			{
 				if (ec)
 				{
-					
+					close();
 					return;
 				}
 				do_read_header();
@@ -98,13 +98,12 @@ private:
 	void do_read_body(uint32_t id)
 	{		
 
-		socket_.async_read_some(asio::buffer(buffer_, 8192 + 1024),
+		socket_.async_read_some(asio::buffer(buffer_, 8192 +1024),
 			[&, this](std::error_code ec, std::size_t bytes_transferred)
 			{
 				if (ec)
 				{
-				
-					//do_read_header();
+					close();
 					return;
 				}
 		
@@ -116,7 +115,7 @@ private:
 	}
 
 protected:
-	std::array<char, 8192+1024> buffer_;
+	std::array<char, 8192+1024+sizeof(uint32_t)> buffer_;
 
 private:
 	asio::io_context& io_context_;

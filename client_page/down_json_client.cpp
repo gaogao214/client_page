@@ -2,7 +2,6 @@
 #include "request.hpp"
 #include "down_json_client.h"
 #include "down_block_client.h"
-#include "file_server.h"
 #include "response.hpp"
 #include <string.h>
 
@@ -21,8 +20,8 @@ int down_json_client::read_handle(uint32_t id)
 		name_text_response resp;
 		resp.parse_bytes(buffer_);
 
-		int list_ = strcmp(resp.body_.name_, list_name);
-		int id_ = strcmp(resp.body_.name_, id_name);
+		int list_ = strcmp(resp.header_.name_, list_name);
+		int id_ = strcmp(resp.header_.name_, id_name);
 		if (list_==0)
 		{
 			OutputDebugString(L"list.json 接收成功\n");
@@ -33,7 +32,7 @@ int down_json_client::read_handle(uint32_t id)
 		{
 			OutputDebugString(L"id.json 接收成功\n");
 
-			save_file(resp.body_.name_, resp.body_.text_);//保存内容
+			save_file(resp.header_.name_, resp.body_.text_);//保存内容
 			parse_block_json(resp.body_.text_);
 			down_load();//把任务放在线程池里向服务器请求下载
 
@@ -119,7 +118,6 @@ void down_json_client::send_id_port(std::size_t id, std::string port)
 	
 	this->async_write(std::move(req), [this](std::error_code ec, std::size_t)
 		{
-			std::cout << ec << std::endl;
 			if (!ec)
 			{
 				

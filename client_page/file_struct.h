@@ -60,14 +60,15 @@ namespace filestruct {
 	{
 		std::string wget_name;
 		uint32_t offset;	
-		
 		GX_JSON(wget_name, offset);
 	};
 	struct wget_c_file_info
 	{
+		
 		std::vector<wget_c_file> wget_c_file_list;
 		GX_JSON(wget_c_file_list);
 	};
+
 }
 inline  filestruct::profile downfile_path;      
 inline filestruct::files_info files_inclient;
@@ -136,7 +137,7 @@ inline void save_file(const char* name, const char* file_buf)//保存内容
 
 }
 
-inline std::size_t send_file_len(const std::string& filename)
+inline std::size_t get_file_len(const std::string& filename)
 {
 	std::ifstream infile(filename.c_str());
 	infile.seekg(0, std::ios_base::end);
@@ -146,7 +147,7 @@ inline std::size_t send_file_len(const std::string& filename)
 	return fsize;
 }
 
-inline std::string send_file_context(const std::string& filename)//文本的内容
+inline std::string get_file_context(const std::string& filename)//文本的内容
 {
 
 	std::ifstream File(filename.c_str());

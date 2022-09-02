@@ -1,16 +1,16 @@
 #include "down_block_client.h"
-#include "file_server.h"
+#include "client_to_the_server.h"
 #include "request.hpp"
 #include "response.hpp"
 #include <filesystem>
 
-filestruct::wget_c_file_info down_block_client::wcfi_copy ;
+filestruct::wget_c_file_info down_block_client::wcfi_copy;
 filestruct::wget_c_file down_block_client::wcf;
 std::mutex down_block_client::write_mtx_;
 filestruct::block down_block_client::blk_copy;
 down_block_client* down_block_client::client_=nullptr;
 std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::total_id_files_num;
-
+std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::id_to_the_files;
 
 
 void down_block_client::send_filename()
@@ -80,16 +80,16 @@ void down_block_client::recive_file_text(uint32_t id)
 		std::memset(resp.header_.name_, 0, 32);//清空内存
 
 		resp.parse_bytes(buffer_.data());
-		std::size_t recive_len = resp.header_.length_;
+		recive_len = resp.header_.length_;
 
 		read_name = resp.header_.name_;
 		id_num = resp.body_.id_;
-		/*std::string*/ file_path_ = downfile_path.path + "\\" + read_name;
+		/*std::string*/ file_path = downfile_path.path + "\\" + read_name;
 		auto total_num = resp.header_.totoal_;
 		std::string text_ = resp.body_.text_;
 
 		map_.emplace(read_name, total_num);
-		std::ofstream file(file_path_.data(), std::ios::out | std::ios::binary | std::ios::app);
+		std::ofstream file(file_path.data(), std::ios::out | std::ios::binary | std::ios::app);
 
 
 		for (auto iter = map_.begin(); iter != map_.end(); iter++)
@@ -105,7 +105,7 @@ void down_block_client::recive_file_text(uint32_t id)
 
 					file.close();
 				
-					save_location(file_path_, read_name, id_num);
+					save_location(file_path, read_name, id_num);
 				
 					count = 0;
 				}
@@ -125,58 +125,52 @@ int down_block_client::read_handle(uint32_t id)
 
 int down_block_client::read_error()
 {
-	wcfi = parse_wget_c_file_json("wget_c_file1.json");
-
-
-	for (auto& iter : wcfi.wget_c_file_list)
-	{
-		wcf.wget_name = iter.wget_name;
-		wcf.offset = iter.offset;
 	
-		wcfi_copy.wget_c_file_list.push_back(wcf);
-	}
-	save_location_connect_error(file_path_, read_name);
+	save_location_connect_error(file_path, read_name);
 
 	return 0;
 }
 
 void down_block_client::save_location_connect_error(const std::string& name,const std::string& no_path_name)
 {
+	
 
-	ifstream id_File(name, ios::binary);
-	id_File.seekg(0, ios_base::end);
-	size_t file_size = id_File.tellg();//文本的大小
-	id_File.seekg(0, ios_base::beg);
+	std::ifstream id_file(name, std::ios::binary);
+	id_file.seekg(0, std::ios_base::end);
+	size_t file_size = id_file.tellg();
+	id_file.seekg(0, std::ios_base::beg);
+
+	if (file_size < recive_len) 
+	{
+		wcf.wget_name = no_path_name;
+		wcf.offset = file_size;
+
+		write_mtx_.lock();
 
 
-	wcf.wget_name = no_path_name;
-	wcf.offset = file_size;
+		wcfi_copy.wget_c_file_list.push_back(wcf);
 
-	write_mtx_.lock();
+		write_mtx_.unlock();
+	}
 
-
-	wcfi_copy.wget_c_file_list.push_back(wcf);
-
-	write_mtx_.unlock();
-
-	parse_client_list_json("list.json");
 	
 	for (auto& iter : files_inclient.file_list)
 	{
 
-		auto it_client = std::find_if(wcfi_copy.wget_c_file_list.begin(), wcfi_copy.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
-		if (it_client == wcfi_copy.wget_c_file_list.end())
+		auto it_client = std::find_if(wcfi.wget_c_file_list.begin(), wcfi.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
+		if (it_client == wcfi.wget_c_file_list.end())
 		{
 			if (iter.path.empty())
 				continue;
 
 			wcf.wget_name = iter.path;
 			wcf.offset = 0;
-		
 			wcfi_copy.wget_c_file_list.push_back(wcf);
+
 		}
 	}
-	
+
+
 	
 	save_wget_c_file_json(wcfi_copy, "wget_c_file.json");
 	return ;
@@ -185,24 +179,28 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 //断开再连接时     wcfi 清空  断开连接时，保存到一个文件中 ，连接时，先读这个文件   再把这个保存到别的文件中
 //保存到wget_c_file文件中 下载完成的文件名  和偏移量
 //加锁（需要把这个成员函数设置成全局函数）否则加锁不会成功（成员函数设置成static  成员变量也需要设置成static）
-void down_block_client::save_location(const string& name, const string& no_path_add_name,std::size_t id_num)
+void down_block_client::save_location(const std::string& name, const std::string& no_path_add_name,std::size_t id_num)
 {
-	/*static */std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
-
-	ifstream id_File(name, ios::binary);
-	id_File.seekg(0, ios_base::end);
-	size_t file_size = id_File.tellg();//文本的大小
-	id_File.seekg(0, ios_base::beg);
-
-
+	
+	std::ifstream id_file(name, std::ios::binary);
+	id_file.seekg(0, std::ios_base::end);
+	size_t file_size = id_file.tellg();//文本的大小
+	id_file.seekg(0, std::ios_base::beg);
+	if (no_path_add_name.empty())
+	{
+		return;
+	}
+	
+	
 	wcf.wget_name = no_path_add_name;
 	wcf.offset = file_size;
 
 	write_mtx_.lock();
 
-	wcfi_copy.wget_c_file_list.push_back(wcf);
+	wcfi.wget_c_file_list.push_back(wcf);
 
 	write_mtx_.unlock();
+	save_wget_c_file_json(wcfi, "wget_c_file1.json");
 
 
 
@@ -213,20 +211,19 @@ void down_block_client::save_location(const string& name, const string& no_path_
 		client_to_server(downfile_path.port);
 
 		QString get_port = QString::fromStdString(downfile_path.port);
-
+		Sleep(2);
 		
 		emit client_->signal_get_id_port_externl(id_num, get_port);
 		
 		OutputDebugString(L"id 块下载完成  客户端转服务器");
 	}
 
-	save_wget_c_file_json(wcfi_copy, "wget_c_file1.json");
 
 }
 
-void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  string name)
+void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  std::string name)
 {
-	string text = RapidjsonToString(wcfi.serializeToJSON());
+	std::string text = RapidjsonToString(wcfi.serializeToJSON());
 	json_formatting(text);
 
 
@@ -238,9 +235,10 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 	fflush(file);
 	fclose(file);
 
+	return;
 }
 
-void down_block_client::client_to_server(string profile_port)
+void down_block_client::client_to_server(std::string profile_port)
 {
 	std::thread t(std::bind(&down_block_client::server, profile_port));
 	
@@ -252,9 +250,9 @@ void down_block_client::server(const std::string& server_port)
 	int port = atoi(server_port.c_str());
 	asio::io_context io_context;
 	asio::ip::tcp::endpoint _endpoint(asio::ip::tcp::v4(), port);
-	auto fs = std::make_shared<file_server>(io_context, _endpoint);
-
-	io_context.run();
+	auto fs = std::make_shared<client_to_the_server>(io_context, _endpoint);
+	fs->run();
+	
 }
 
 

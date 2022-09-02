@@ -7,8 +7,8 @@ static constexpr char wget_c_name[32] = "wget_c_file.json";
 
 void wget_c_file_client::do_send_wget_file_name_text()
 {
-	std::size_t fsize = send_file_len(wget_c_name);
-	std::string list_buf = send_file_context(wget_c_name);
+	std::size_t fsize = get_file_len(wget_c_name);
+	std::string list_buf = get_file_context(wget_c_name);
 
 	name_text_request req;
 	req.header_.length_ = fsize;

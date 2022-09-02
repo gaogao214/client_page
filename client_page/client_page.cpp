@@ -112,11 +112,6 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	}
 
 
-
-
-
-
-
 down_block_ptr_->send_filename();
 
 	down_blocks_.push_back(down_block_ptr_);

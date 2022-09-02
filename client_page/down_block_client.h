@@ -13,6 +13,8 @@ public:
 		: basic_client(io_context, endpoints)
 		, blk(block)
 	{
+		parse_client_list_json("list.json");
+
 		client_ = this;
 	
 	}
@@ -41,7 +43,7 @@ public:
 
 	void save_location_connect_error(const std::string& name, const std::string& no_path_add_name);
 
-	static void save_wget_c_file_json(filestruct::wget_c_file_info wcfi, std::string name);
+	static void save_wget_c_file_json(filestruct::wget_c_file_info  wcfi, std::string name);
 
 
 signals:
@@ -55,7 +57,7 @@ private:
 	filestruct::block blk;
 
 	std::string read_name;     
-	std::string file_path_;   
+	std::string file_path;   
 	
 	std::map<std::string, std::size_t> map_;
 	std::size_t count = 0;
@@ -65,12 +67,13 @@ public:
 	
 	static std::mutex write_mtx_;
 	static std::unordered_map<std::size_t, std::vector<std::string>> total_id_files_num;
+	static std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
 
 	static filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
 	static filestruct::wget_c_file wcf;
 	static filestruct::block blk_copy;
 
 	static down_block_client* client_;
-
+	std::size_t recive_len;
 };
 
