@@ -4,6 +4,7 @@
 #include <Qstring>
 #include <QMetaType>
 #include <QVariant>
+#include <QListWidgetItem>
 
 client_page::client_page(QWidget* parent)
 	: QMainWindow(parent)
@@ -14,9 +15,13 @@ client_page::client_page(QWidget* parent)
 	ui.pro_bar->setOrientation(Qt::Horizontal);  //进度条水平方向
 	ui.pro_bar->setMinimum(0);  //最小值
 	qRegisterMetaType<QVariant>("QVariant");
+
+	connect(ui.init, &QPushButton::clicked, this, &client_page::init_listview);
+	//connect(ui.confirm,SIGNAL(clicked(bool)),this,SLOT(confirm_listview(bool)));
 	connect(ui.connect, &QPushButton::clicked, this, &client_page::request_connect);
-	connect(ui.go_on, &QPushButton::clicked, this, &client_page::wget_c_file_);
+	
 	//清理本地文件
+
 
 	start_io_pool();
 }
@@ -24,6 +29,12 @@ client_page::client_page(QWidget* parent)
 client_page::~client_page()
 {
 	stop();
+}
+
+void client_page::start_clicked()
+{
+	request_connect();
+	wget_c_file_();
 }
 
 void client_page::request_connect()
@@ -48,6 +59,8 @@ void client_page::request_connect()
 	{
 		OutputDebugString(L"pro bar 关联失败\n");
 	}
+	//QMetaObject::Connection connecthanndle_pro_bar = connect(down_json_ptr_, SIGNAL(sign_pro_bar(int, int)), this, SLOT(init_listview()), Qt::QueuedConnection);
+
 	//QMetaObject::Connection connecthanndle_name = connect(down_json_ptr_, SIGNAL(sign_file_name(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
 	//if (connecthanndle_name)
 	//{
@@ -110,7 +123,11 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	{
 		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
 	}
-
+	QMetaObject::Connection connecthanndle_wget = connect(down_block_ptr_.get(), SIGNAL(signal_wget_down_file()), SLOT(wget_c_file_()), Qt::DirectConnection);
+	if (connecthanndle_wget)
+	{
+		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
+	}
 
 down_block_ptr_->send_filename();
 
@@ -135,8 +152,14 @@ void client_page::wget_c_file_()
 
 	asio::ip::tcp::resolver resolver_(io_pool_.get_io_context());
 	auto endpoint_ = resolver_.resolve( "127.0.0.1","12313" );
-	m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_/*,this*/);
-	m_wget_c_file_->do_send_wget_file_name_text();
+
+	wget_c_file_client_ptr_ = new wget_c_file_client(io_pool_.get_io_context(), endpoint_);
+	while (!wget_c_file_client_ptr_->connect_flag_);
+
+	wget_c_file_client_ptr_->do_send_wget_file_name_text();
+
+	//m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_/*,this*/);
+	//m_wget_c_file_->do_send_wget_file_name_text();
 	//QMetaObject::Connection connecthanndle_pro_bar = connect(m_wget_c_file_.get(), SIGNAL(sign_wget_c_file_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
 	//if (connecthanndle_pro_bar)
 	//{
@@ -202,4 +225,40 @@ void client_page::send_get_id_port_for_server(std::size_t get_server_id, QString
 	std::string str = get_server_port.toStdString();
 	std::string id_port = std::to_string(get_server_id)+','+str;
 	down_json_ptr_->send_id_port(/*id_port*/get_server_id,str);
+}
+
+void client_page::wget_file_client()
+{
+	OutputDebugString(L"wget_file_client   进入槽*******************________________________________________________\n");
+
+	wget_c_file_client_ptr_->do_send_wget_file_name_text();
+
+}
+
+void client_page::init_listview()
+{
+	std::string str;
+	std::string file_path;
+	QString str_;
+	QListWidgetItem* item;
+	parse_down_jsonfile("down.json");
+	for (auto& iter : bck.files)
+	{
+		
+		file_path = downfile_path.path + "\\" + iter;
+		
+		auto pos = file_path.find_last_of("\\");
+
+		str = file_path.substr(0,pos);
+
+		str_ = QString::fromStdString(str);
+		
+		item = new QListWidgetItem();
+		item->setText(str_);
+		item->setCheckState(Qt::Unchecked);
+		ui.listwidget->addItem(item);
+		
+			
+	}
+	
 }

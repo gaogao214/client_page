@@ -10,6 +10,8 @@
 static const char down_json_name[32] = "down.json";
 
 Q_DECLARE_METATYPE(filestruct::block)
+
+
 class down_json_client 
 	: public basic_client
 {

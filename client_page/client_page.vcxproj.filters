@@ -21,6 +21,18 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="down_json_client">
+      <UniqueIdentifier>{2d74738b-add9-460b-a4a4-197c7c09cc7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="down_block_client">
+      <UniqueIdentifier>{b5fd4391-df6c-48f3-8678-8c413e6623ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="wget_c_file_client">
+      <UniqueIdentifier>{241fa3dc-cf26-4c49-a733-17a8f8283a42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="client_to_the_server">
+      <UniqueIdentifier>{999a7e26-c057-4039-9dcf-ea3e9e01081c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="client_page.qrc">
@@ -49,23 +61,23 @@
     <ClCompile Include="..\..\server_page\server_page\rapidjson_serialize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="file_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="server_wget_c_file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="io_context_pool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="down_json_client.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>down_json_client</Filter>
     </ClCompile>
     <ClCompile Include="down_block_client.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>down_block_client</Filter>
     </ClCompile>
     <ClCompile Include="wget_c_file_client.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>wget_c_file_client</Filter>
+    </ClCompile>
+    <ClCompile Include="client_to_the_server.cpp">
+      <Filter>client_to_the_server</Filter>
+    </ClCompile>
+    <ClCompile Include="client_to_the_session.cpp">
+      <Filter>client_to_the_server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -78,28 +90,25 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="file_server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="server_wget_c_file.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="io_context_pool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wget_c_file_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="file_struct.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="basic_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\share\request.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\share\response.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client_to_the_server.h">
+      <Filter>client_to_the_server</Filter>
+    </ClInclude>
+    <ClInclude Include="client_to_the_session.h">
+      <Filter>client_to_the_server</Filter>
+    </ClInclude>
+    <ClInclude Include="basic_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,10 +119,13 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="down_json_client.h">
-      <Filter>Header Files</Filter>
+      <Filter>down_json_client</Filter>
     </QtMoc>
     <QtMoc Include="down_block_client.h">
-      <Filter>Header Files</Filter>
+      <Filter>down_block_client</Filter>
+    </QtMoc>
+    <QtMoc Include="wget_c_file_client.h">
+      <Filter>wget_c_file_client</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

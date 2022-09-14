@@ -13,10 +13,7 @@ public:
 		: basic_client(io_context, endpoints)
 		, blk(block)
 	{
-		parse_client_list_json("list.json");
-
 		client_ = this;
-	
 	}
 
 public:
@@ -45,13 +42,12 @@ public:
 
 	static void save_wget_c_file_json(filestruct::wget_c_file_info  wcfi, std::string name);
 
-
 signals:
 	
 	void signal_get_id_port_externl(std::size_t get_server_id, QString get_server_port);
 	void signal_pro_bar(int maxvalue, int value);
 	void signal_file_name_(QString file_name_);
-
+	void signal_wget_down_file();
 
 private:
 	filestruct::block blk;
@@ -64,13 +60,13 @@ private:
 
 public:
 
+	std::size_t count_ = 1;
 	
+
 	static std::mutex write_mtx_;
 	static std::unordered_map<std::size_t, std::vector<std::string>> total_id_files_num;
 	static std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
-
-	static filestruct::wget_c_file_info wcfi_copy;  //声明一个结构体
-	static filestruct::wget_c_file wcf;
+	static std::string str_file;
 	static filestruct::block blk_copy;
 
 	static down_block_client* client_;

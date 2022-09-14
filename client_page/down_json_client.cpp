@@ -7,8 +7,7 @@
 
 static constexpr char list_name[32] = "list.json";
 static constexpr char id_name[32] = "id.json";
-static constexpr char wget_c_file[32] = "wget_c_file.json";
-static constexpr char wget_c_file1[32] = "wget_c_file1.json";
+static constexpr char wget_c_file1[32] = "wget_c_file.json";
 
 int down_json_client::read_handle(uint32_t id)
 {
@@ -27,6 +26,7 @@ int down_json_client::read_handle(uint32_t id)
 			OutputDebugString(L"list.json 接收成功\n");
 			parse_server_list_json(resp.body_.text_);
 			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
+
 		}
 		if (id_==0)
 		{
@@ -49,7 +49,6 @@ int down_json_client::read_error()
 
 	return 0;
 }
-
 
 void down_json_client::isfile_exist(const char* file_buf, int buf_len)//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
 {

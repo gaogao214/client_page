@@ -4,15 +4,19 @@
 #include <QObject>
 #include <sstream>
 
+static constexpr std::size_t size_ = 8192 + 1024 + sizeof(uint32_t);
+
 
 class basic_client:public QObject
 {
+	
 public:
 	explicit basic_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		:io_context_(io_context)
-		, socket_(io_context)
+		,socket_(io_context)
+		,endpoint_(endpoints)
 	{
-		do_connect(endpoints);
+		do_connect();
 	}
 
 public:
@@ -45,7 +49,13 @@ public:
 
 	void close()
 	{
-		socket_.close();
+		if (socket_.is_open())
+		{
+			asio::error_code ec;
+			socket_.shutdown(asio::socket_base::shutdown_both, ec);
+			socket_.close();
+		}
+	
 	}
 
 	auto& get_io_context()
@@ -53,42 +63,51 @@ public:
 		return io_context_;
 	}
 
+
 protected:
 	virtual int read_handle(uint32_t) = 0;
 	virtual int read_error() = 0;
 
-
 private:
-	void do_connect(asio::ip::tcp::resolver::results_type endpoints)
+
+	void do_connect()
 	{
-		asio::async_connect(socket_, endpoints,
-			[this](std::error_code ec, asio::ip::tcp::endpoint)
-			{
-				if (ec)
+		connect_flag_ = false;
+		if (!connect_flag_)
+		{
+			asio::async_connect(socket_, endpoint_,
+				[&, this](std::error_code ec, asio::ip::tcp::endpoint)
 				{
-					close();
-					return;
-				}
-				do_read_header();
-			});
+					if (ec)
+					{		
+						read_error();
+
+						close();
+						return;
+					}
+					connect_flag_ = true;					
+					do_read_header();
+
+				});
+		}
 	}
 
 	void do_read_header()
 	{		
-
 		asio::async_read(socket_, asio::buffer(buffer_, sizeof(uint32_t)),
-			[this](std::error_code ec, std::size_t)
+			[this](std::error_code ec, std::size_t sz)
 			{
 				if (ec)
 				{
-					read_error();
 					close();
+					do_connect();
 					return ;
 				}
 
 				uint32_t proto_id{};
 				std:memcpy(&proto_id, buffer_.data(), sizeof(uint32_t));
-				
+				buffer_.fill(0);
+
 				do_read_body(proto_id);
 				
 			});
@@ -97,8 +116,7 @@ private:
 
 	void do_read_body(uint32_t id)
 	{		
-
-		socket_.async_read_some(asio::buffer(buffer_, 8192 +1024),
+		socket_.async_read_some(asio::buffer(buffer_, size_ - sizeof(uint32_t)),
 			[&, this](std::error_code ec, std::size_t bytes_transferred)
 			{
 				if (ec)
@@ -115,9 +133,13 @@ private:
 	}
 
 protected:
-	std::array<char, 8192+1024+sizeof(uint32_t)> buffer_;
+	std::array<char, size_> buffer_;
+
+public:
+	bool connect_flag_=false;
 
 private:
+	asio::ip::tcp::resolver::results_type endpoint_;
 	asio::io_context& io_context_;
 	asio::ip::tcp::socket socket_;
 	std::size_t file_size=0;

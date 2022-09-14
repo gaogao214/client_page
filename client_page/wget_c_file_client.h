@@ -4,11 +4,12 @@
 
 class wget_c_file_client : public basic_client
 {
+	Q_OBJECT
 public:
 	wget_c_file_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		: basic_client(io_context, endpoints)
 	{
-
+		
 	}
 
 public:
@@ -16,10 +17,10 @@ public:
 
 	void do_recive_wget_file(uint32_t id);
 
+
 protected:
 	virtual int read_handle(uint32_t id) override;
 	virtual int read_error() override;
-
 
 private:
 

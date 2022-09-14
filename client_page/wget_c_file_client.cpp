@@ -3,24 +3,28 @@
 #include "request.hpp"
 #include "response.hpp"
 #include "file_struct.h"
-static constexpr char wget_c_name[32] = "wget_c_file.json";
+static constexpr char wget_c_name2[32] = "wget_c_file2.json";
 
 void wget_c_file_client::do_send_wget_file_name_text()
 {
-	std::size_t fsize = get_file_len(wget_c_name);
-	std::string list_buf = get_file_context(wget_c_name);
+
+	std::size_t fsize = get_file_len(wget_c_name2);
+	std::string list_buf = get_file_context(wget_c_name2);
 
 	name_text_request req;
 	req.header_.length_ = fsize;
-	req.body_.set_name(wget_c_name,list_buf);
+	req.body_.set_name(wget_c_name2,list_buf);
 
 
 	this->async_write(std::move(req), [this](std::error_code ec, std::size_t sz)
 		{
-			if (!ec)
+			if (!ec) 
 			{
 				OutputDebugString(L"s 断点续传文件发送成功");
+
 			}
+			OutputDebugStringA(ec.message().data());
+
 		});
 }
 
@@ -55,6 +59,9 @@ void wget_c_file_client::do_recive_wget_file(uint32_t id )
 
 				file.write(text, len);
 				++count;
+				OutputDebugStringA(name);
+				OutputDebugStringA("文件接收成功\n");
+
 
 				if (iter->second == count)
 				{

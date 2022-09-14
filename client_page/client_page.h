@@ -26,10 +26,6 @@ public:
 public:
 	Ui::client_pageClass ui;
 	size_t next_io_context_ = 0;
-	/*  auto get_ui()
-	  {
-		  return ui;
-	  }*/
 
 
 public slots:
@@ -38,21 +34,24 @@ public slots:
 	void request_connect();
 	void down_block_file_(QVariant file_names, QString loadip, QString loadport);
 	void wget_c_file_();
+	void wget_file_client();
 	void show_progress_bar(int maxvalue_, int value_);
 	void show_file_name(/*char file_name[512]*/QString file_name);
 	void show_text_log(QString log_);
 	void show_connect();
-
+	void start_clicked();
+	void init_listview();
 private:
-	//std::shared_ptr<down_json_client> down_json_ptr_;
-	down_json_client* down_json_ptr_;
-	std::shared_ptr<wget_c_file_client> m_wget_c_file_;
-	//std::shared_ptr<down_block_client> down_block_ptr_;
 	std::vector<std::shared_ptr<down_block_client>> down_blocks_;
+
+	wget_c_file_client* wget_c_file_client_ptr_;
+
+	down_json_client* down_json_ptr_;
+
+	filestruct::block bck;
 
 	double dpro;
 
-	filestruct::block bck;
 
 
 public:

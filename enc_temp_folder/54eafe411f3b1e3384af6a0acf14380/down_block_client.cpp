@@ -185,7 +185,7 @@ void down_block_client::save_location(const std::string& name, const std::string
 {
 
 	filestruct::wget_c_file wcf;
-
+	filestruct::wget_c_file_info wcfi_;
 	std::ifstream id_file(name, std::ios::binary);
 	id_file.seekg(0, std::ios_base::end);
 	size_t file_size = id_file.tellg();//文本的大小
@@ -201,12 +201,12 @@ void down_block_client::save_location(const std::string& name, const std::string
 	wcf.id = id_num;
 	//write_mtx_.lock();
 
-	wcfi.wget_c_file_list.push_back(wcf);
+	wcfi_.wget_c_file_list.push_back(wcf);
 
 	//write_mtx_.unlock();
 	str_file = "wget_c_file" + std::to_string(GetCurrentThreadId()) + ".json";
 
-	save_wget_c_file_json(wcfi, str_file);
+	save_wget_c_file_json(wcfi_, str_file);
 
 
 

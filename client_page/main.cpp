@@ -9,8 +9,9 @@ void clear()
 {
     std::filesystem::remove("id.json");
     std::filesystem::remove("list.json");
-    std::filesystem::remove("wget_c_file1.json");
     std::filesystem::remove("wget_c_file.json");
+    std::filesystem::remove("wget_c_file1.json");
+    std::filesystem::remove("wget_c_file2.json");
     std::filesystem::remove_all("down/");
 }
 
