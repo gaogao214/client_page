@@ -30,15 +30,15 @@ public:
 	void async_write(const std::string& buffer, _Handle&& handle)
 	{
 		asio::async_write(socket_, asio::buffer(buffer), std::forward<_Handle>(handle));
-		//socket_.async_write_some(asio::buffer(buffer), std::forward<_Handle>(handle));
 	}
 
 	template<typename _Request, typename _Handle>
 	void async_write(_Request&& req, _Handle&& handle)
 	{
-
 		constexpr auto id = _Request::Number;
+
 		std::array<char, 8192+sizeof(uint32_t)+1024> arr{};
+
 		std::memcpy(arr.data(), &id, sizeof(uint32_t));
 
 		req.to_bytes(arr.data() + sizeof(uint32_t));
@@ -52,10 +52,11 @@ public:
 		if (socket_.is_open())
 		{
 			asio::error_code ec;
+
 			socket_.shutdown(asio::socket_base::shutdown_both, ec);
+
 			socket_.close();
 		}
-	
 	}
 
 	auto& get_io_context()
@@ -66,13 +67,16 @@ public:
 
 protected:
 	virtual int read_handle(uint32_t) = 0;
+
 	virtual int read_error() = 0;
+
 
 private:
 
 	void do_connect()
 	{
 		connect_flag_ = false;
+
 		if (!connect_flag_)
 		{
 			asio::async_connect(socket_, endpoint_,
@@ -83,11 +87,12 @@ private:
 						read_error();
 
 						close();
+
 						return;
 					}
-					connect_flag_ = true;					
-					do_read_header();
+					connect_flag_ = true;		
 
+					do_read_header();
 				});
 		}
 	}
@@ -100,18 +105,20 @@ private:
 				if (ec)
 				{
 					close();
+
 					do_connect();
+
 					return ;
 				}
 
 				uint32_t proto_id{};
+
 				std:memcpy(&proto_id, buffer_.data(), sizeof(uint32_t));
 				buffer_.fill(0);
 
 				do_read_body(proto_id);
 				
 			});
-
 	}
 
 	void do_read_body(uint32_t id)
@@ -122,10 +129,12 @@ private:
 				if (ec)
 				{
 					close();
+
 					return;
 				}
 		
 				read_handle(id);
+
 				buffer_.fill(0);
 			
 				do_read_header();
@@ -140,8 +149,11 @@ public:
 
 private:
 	asio::ip::tcp::resolver::results_type endpoint_;
+
 	asio::io_context& io_context_;
+
 	asio::ip::tcp::socket socket_;
+
 	std::size_t file_size=0;
 
 };

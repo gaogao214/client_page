@@ -77,7 +77,7 @@ void client_to_the_session::do_send_file(uint32_t id,const std::string& filename
 
 			it_resp.header_.length_ = nleft;
 			std::memcpy(it_resp.header_.name_, filename.data(), filename.size());
-			it_resp.header_.totoal_ = nchunkcount;
+			it_resp.header_.totoal_sequence_ = nchunkcount;
 			it_resp.body_.id_ = id;
 			it_resp.body_.set_text_(count_file_buf.get());
 

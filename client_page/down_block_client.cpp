@@ -4,9 +4,6 @@
 #include "response.hpp"
 #include <filesystem>
 
-down_block_client* down_block_client::client_=nullptr;
-std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::total_id_files_num;
-std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::id_to_the_files;
 
 void down_block_client::send_filename()
 {
@@ -14,11 +11,10 @@ void down_block_client::send_filename()
 
 	for (auto iter : blk.files)
 	{	
-		auto name = iter;
 
-		total_id_files_num[blk.id].push_back(name);
+		total_id_files_num[blk.id].push_back(iter);
 
-		if (name.empty())
+		if (iter.empty())
 			continue;
 		
 		using namespace std::chrono_literals;
@@ -26,39 +22,36 @@ void down_block_client::send_filename()
 
 		id_name_request req;
 		req.body_.id_=blk.id;
-		req.body_.set_name(name);
+		req.body_.set_name(iter);
 
-	this->async_write(std::move(req),[name, this](std::error_code ec, std::size_t)
-		{
-			if (!ec)
+		this->async_write(std::move(req),[iter, this](std::error_code ec, std::size_t)
 			{
-				does_the_folder_exist(name);
-				OutputDebugStringA(name.data());
-				OutputDebugString(L"\n");
+				if (!ec)
+				{
+					does_the_folder_exist(iter);
+					OutputDebugStringA(iter.data());
+					OutputDebugString(L"\n");
 
-			}
-		});
+				}
+			});
 	}
 }
 
-
-
-void down_block_client::does_the_folder_exist(const std::string& list_name)//判断文件夹是否存在，不存在则创建文件夹
+void down_block_client::does_the_folder_exist(const std::string& list_name)
 {
 
-	std::string file_path;   //路径+文件名
+	std::string file_path;   
 
 	file_path = downfile_path.path + "\\" + list_name;
 	std::size_t found = file_path.find_last_of("\\");
 
 	std::error_code ec;
-	if (!std::filesystem::exists(file_path.substr(0, found)))//不存在创建
+	if (!std::filesystem::exists(file_path.substr(0, found)))
 	{
 		std::filesystem::create_directories(file_path.substr(0, found), ec);
 	}
 
 }
-
 
 void down_block_client::recive_file_text(uint32_t id)
 {
@@ -68,18 +61,25 @@ void down_block_client::recive_file_text(uint32_t id)
 	case response_number::id_text_response_:
 
 		id_text_response resp;
-		std::memset(resp.header_.name_, 0, 32);//清空内存
+
+		std::memset(resp.header_.name_, 0, 32);
+
 
 		resp.parse_bytes(buffer_.data());
-		recive_len = resp.header_.length_;
 
+		recive_len = resp.header_.length_;
 		read_name = resp.header_.name_;
+		emit signal_file_name_(resp.header_.name_);
+
 		id_num = resp.body_.id_;
-		file_path = downfile_path.path + "\\" + read_name;
-		auto total_num = resp.header_.totoal_;
+
+		file_path = downfile_path.path + "\\" + resp.header_.name_;
+
+		auto total_num = resp.header_.totoal_sequence_;
 		std::string text_ = resp.body_.text_;
 
 		map_.emplace(read_name, total_num);
+
 		std::ofstream file(file_path.data(), std::ios::out | std::ios::binary | std::ios::app);
 
 
@@ -91,13 +91,28 @@ void down_block_client::recive_file_text(uint32_t id)
 				file.write(text_.data(), recive_len);
 				++count;
 
+				
+				if (resp.header_.totoal_length_<=0 && recive_len<0 && count<0 && recive_len * (count)<0)
+				{
+					OutputDebugStringA("==0 \n");
+					OutputDebugStringA("recive_len<0 \n");
+					OutputDebugStringA("count<0 **********************************\n");
+					return;
+				}
+				
+				emit signal_pro_bar(resp.header_.totoal_length_, recive_len * (count));
+
+			
+
 				if (iter->second == count)
 				{
 
 					file.close();
 				
 					save_location(file_path, read_name, id_num);
-				
+					
+					emit signal_pro_bar(resp.header_.totoal_length_, recive_len*(count));
+
 					count = 0;
 				}
 			}
@@ -118,11 +133,11 @@ int down_block_client::read_error()
 {
 	
 	save_location_connect_error(file_path, read_name);
+
 	QString wget_file_name = QString::fromStdString(str_file) ;
-	OutputDebugStringA(str_file.data());
-	OutputDebugStringA(read_name.data());
-	OutputDebugStringA("\n");
-	emit client_->signal_wget_down_file(wget_file_name);
+
+	emit signal_wget_down_file(wget_file_name);
+
 	return 0;
 }
 
@@ -130,11 +145,10 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 {
 	filestruct::wget_c_file_info wcfi_copy;
 
-	filestruct::wget_c_file wcf;
-	std::unordered_map<int, int> index;			
-	std::unordered_map<int, int> id_index;			
+	filestruct::wget_c_file wcf;		
 
 	std::ifstream id_file(name, std::ios::binary);
+
 	id_file.seekg(0, std::ios_base::end);
 	size_t file_size = id_file.tellg();
 	id_file.seekg(0, std::ios_base::beg);
@@ -144,21 +158,16 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 		wcf.wget_name = no_path_name;
 		wcf.offset = file_size;
 		
-		//write_mtx_.lock();
-
-
 		wcfi_copy.wget_c_file_list.push_back(wcf);
-
-		//write_mtx_.unlock();
 	}
 
-	//for (auto& iter : blk_copy.files)
 	for (auto& iter : files_inserver.file_list)
 	{
 		if (number_ != iter.blockid)
 			continue;
 
 		auto it_client = std::find_if(wcfi.wget_c_file_list.begin(), wcfi.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
+
 		if (it_client == wcfi.wget_c_file_list.end())
 		{
 			if (iter.path.empty())
@@ -171,19 +180,6 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 			wcfi_copy.wget_c_file_list.push_back(wcf);
 
 		}
-		//std::size_t file_len = get_file_len(downfile_path.path + "\\" + iter.path);
-		//wcf.wget_name = iter.path;
-		//wcf.offset = file_len;
-		//wcf.id = iter.blockid;
-		//wcfi_copy.wget_c_file_list.push_back(wcf);
-	/*	std::size_t file_len = get_file_len(downfile_path.path+"\\"+iter.path);
-		if (file_len == recive_len)
-		{
-			wcf.wget_name = iter.path;
-			wcf.offset = file_len;
-			wcf.id = iter.blockid;
-			wcfi_copy.wget_c_file_list.push_back(wcf);
-		}*/
 	}
 
 	str_file = "wget_c_file_" + std::to_string(number_) + ".json";
@@ -193,39 +189,25 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 	return ;
 }
 
-//断开再连接时     wcfi 清空  断开连接时，保存到一个文件中 ，连接时，先读这个文件   再把这个保存到别的文件中
-//保存到wget_c_file文件中 下载完成的文件名  和偏移量
-//加锁（需要把这个成员函数设置成全局函数）否则加锁不会成功（成员函数设置成static  成员变量也需要设置成static）
 void down_block_client::save_location(const std::string& name, const std::string& no_path_add_name,std::size_t id_num)
 {
 
 	filestruct::wget_c_file wcf;
-	filestruct::wget_c_file wcf_;
-	filestruct::wget_c_file_info wcfi_;
+
 	std::ifstream id_file(name, std::ios::binary);
+
 	id_file.seekg(0, std::ios_base::end);
-	size_t file_size = id_file.tellg();//文本的大小
+	std::size_t file_size = id_file.tellg();
 	id_file.seekg(0, std::ios_base::beg);
+
 	if (no_path_add_name.empty())
-	{
 		return;
-	}
-	
 	
 	wcf.wget_name = no_path_add_name;
 	wcf.offset = file_size;
 	wcf.id = id_num;
-	//write_mtx_.lock();
 
 	wcfi.wget_c_file_list.push_back(wcf);
-
-	//write_mtx_.unlock();
-
-	//str_file = "wget_c_file_" + std::to_string(number_) + ".json";
-
-	//save_wget_c_file_json(wcfi, str_file);
-
-
 
 	id_to_the_files[id_num].push_back(no_path_add_name);        
 
@@ -235,9 +217,8 @@ void down_block_client::save_location(const std::string& name, const std::string
 		client_to_server(downfile_path.port);
 
 		QString get_port = QString::fromStdString(downfile_path.port);
-		Sleep(2);
 		
-		emit client_->signal_get_id_port_externl(id_num, get_port);
+		emit signal_get_id_port_externl(id_num, get_port);
 		
 		OutputDebugString(L"id 块下载完成  客户端转服务器");
 	}
@@ -248,6 +229,7 @@ void down_block_client::save_location(const std::string& name, const std::string
 void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  std::string name)
 {
 	std::string text = RapidjsonToString(wcfi.serializeToJSON());
+
 	json_formatting(text);
 
 	save_file(name.c_str(),text.c_str() );
@@ -257,7 +239,7 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 
 void down_block_client::client_to_server(std::string profile_port)
 {
-	std::thread t(std::bind(&down_block_client::server, profile_port));
+	std::thread t(std::bind(&down_block_client::server,this, profile_port));
 	
 	t.detach();
 }
@@ -265,9 +247,12 @@ void down_block_client::client_to_server(std::string profile_port)
 void down_block_client::server(const std::string& server_port)
 {
 	int port = atoi(server_port.c_str());
+
 	asio::io_context io_context;
+
 	asio::ip::tcp::endpoint _endpoint(asio::ip::tcp::v4(), port);
 	auto fs = std::make_shared<client_to_the_server>(io_context, _endpoint);
+
 	fs->run();
 	
 }

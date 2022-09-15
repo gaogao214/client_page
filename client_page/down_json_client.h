@@ -20,7 +20,6 @@ public:
 	down_json_client(asio::io_context& io_context, const asio::ip::tcp::resolver::results_type& endpoints)
 		: basic_client(io_context, endpoints)
 		, pool(2)
-		//, io_pool_block_(2)
 	{
 		parse_down_jsonfile(down_json_name);
 	}
@@ -31,26 +30,26 @@ protected:
 
 private:
 
-	void isfile_exist(const char* file_buf, int buf_len);//判断list.json文件是否存在,存在就解析json文本与server的json进行比较，不存在就保存文件
+	void isfile_exist(const char* file_buf, int buf_len);
 
-	void down_load();//把任务放在线程池里向服务器请求下载
+	void down_load();
 
 public:
-	void send_id_port(/*const std::string id_port*/std::size_t id,std::string port);//发送成为服务器的id ip port 
+	void send_id_port(std::size_t id,std::string port);
 
 signals:
 
-	void sign_pro_bar(int maxvalue_, int value_);
+	void sign_pro_bar(int maxvalue_,int value_);
 	void sign_file_name(QString file_name);
 	void sign_text_log(QString log_);
 	void sign_down_block(QVariant var, int id, QString loadip, QString loadport);
 
 
 private:
-	filestruct::blocks_for_download blks;		//存一个块id的文件名
+	filestruct::blocks_for_download blks;		
 
-	std::unordered_map<int, int> id_index;		//一共的id  数量
-	std::unordered_map<int, int> index;			//下载的次数
+	std::unordered_map<int, int> id_index;		
+	std::unordered_map<int, int> index;			
 
 	ThreadPool pool;
 

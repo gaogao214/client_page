@@ -13,14 +13,16 @@ public:
 	}
 
 public:
-	void do_send_wget_file_name_text(std::string wget_file_name);//发送断点续传的名字
+	void do_send_wget_file_name_text(std::string wget_file_name);
 
 	void do_recive_wget_file(uint32_t id);
 
 
 protected:
 	virtual int read_handle(uint32_t id) override;
+
 	virtual int read_error() override;
+
 
 private:
 
