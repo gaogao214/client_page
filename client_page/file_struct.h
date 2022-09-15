@@ -59,7 +59,7 @@ namespace filestruct {
 	struct wget_c_file                
 	{
 		std::string wget_name;
-		uint32_t offset;	
+		uint32_t offset;
 		uint32_t id;
 		GX_JSON(wget_name, offset,id);
 	};

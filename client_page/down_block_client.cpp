@@ -4,13 +4,9 @@
 #include "response.hpp"
 #include <filesystem>
 
-
-std::mutex down_block_client::write_mtx_;
-filestruct::block down_block_client::blk_copy;
 down_block_client* down_block_client::client_=nullptr;
 std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::total_id_files_num;
 std::unordered_map<std::size_t, std::vector<std::string>> down_block_client::id_to_the_files;
-std::string down_block_client::str_file;
 
 void down_block_client::send_filename()
 {
@@ -125,15 +121,21 @@ int down_block_client::read_error()
 {
 	
 	save_location_connect_error(file_path, read_name);
-
-	emit client_->signal_wget_down_file();
+	QString wget_file_name = QString::fromStdString(str_file) ;
+	OutputDebugStringA(str_file.data());
+	OutputDebugStringA(read_name.data());
+	OutputDebugStringA("\n");
+	emit client_->signal_wget_down_file(wget_file_name);
 	return 0;
 }
 
 void down_block_client::save_location_connect_error(const std::string& name,const std::string& no_path_name)
 {
 	filestruct::wget_c_file_info wcfi_copy;
+
 	filestruct::wget_c_file wcf;
+	std::unordered_map<int, int> index;			
+	std::unordered_map<int, int> id_index;			
 
 	std::ifstream id_file(name, std::ios::binary);
 	id_file.seekg(0, std::ios_base::end);
@@ -144,18 +146,20 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 	{
 		wcf.wget_name = no_path_name;
 		wcf.offset = file_size;
-
-		write_mtx_.lock();
+		
+		//write_mtx_.lock();
 
 
 		wcfi_copy.wget_c_file_list.push_back(wcf);
 
-		write_mtx_.unlock();
+		//write_mtx_.unlock();
 	}
 
-	
+	//for (auto& iter : blk_copy.files)
 	for (auto& iter : files_inserver.file_list)
 	{
+		if (number_ != iter.blockid)
+			continue;
 
 		auto it_client = std::find_if(wcfi.wget_c_file_list.begin(), wcfi.wget_c_file_list.end(), [&](auto file) {return file.wget_name == iter.path; });
 		if (it_client == wcfi.wget_c_file_list.end())
@@ -165,15 +169,25 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 
 			wcf.wget_name = iter.path;
 			wcf.offset = 0;
+			wcf.id = iter.blockid;
+
 			wcfi_copy.wget_c_file_list.push_back(wcf);
-			
+
+		}
+
+		std::size_t file_len = get_file_len(downfile_path.path+"\\"+iter.path);
+		if (file_len == recive_len)
+		{
+			wcf.wget_name = "";
+			wcf.offset = 0;
+			wcf.id = 0;
+			wcfi_copy.wget_c_file_list.push_back(wcf);
 		}
 	}
 
-	str_file = "wget_c_file" + std::to_string(GetCurrentThreadId()) + ".json";
+	str_file = "wget_c_file_" + std::to_string(number_) + ".json";
 
 	save_wget_c_file_json(wcfi_copy, str_file);
-
 
 	return ;
 }
@@ -185,7 +199,8 @@ void down_block_client::save_location(const std::string& name, const std::string
 {
 
 	filestruct::wget_c_file wcf;
-
+	filestruct::wget_c_file wcf_;
+	filestruct::wget_c_file_info wcfi_;
 	std::ifstream id_file(name, std::ios::binary);
 	id_file.seekg(0, std::ios_base::end);
 	size_t file_size = id_file.tellg();//文本的大小
@@ -204,9 +219,10 @@ void down_block_client::save_location(const std::string& name, const std::string
 	wcfi.wget_c_file_list.push_back(wcf);
 
 	//write_mtx_.unlock();
-	str_file = "wget_c_file" + std::to_string(GetCurrentThreadId()) + ".json";
 
-	save_wget_c_file_json(wcfi, str_file);
+	//str_file = "wget_c_file_" + std::to_string(number_) + ".json";
+
+	//save_wget_c_file_json(wcfi, str_file);
 
 
 
@@ -214,7 +230,7 @@ void down_block_client::save_location(const std::string& name, const std::string
 
 	if (total_id_files_num[id_num].size() == id_to_the_files[id_num].size())
 	{
-		
+
 		client_to_server(downfile_path.port);
 
 		QString get_port = QString::fromStdString(downfile_path.port);

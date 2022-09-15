@@ -21,8 +21,8 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
+      <x>20</x>
+      <y>20</y>
       <width>761</width>
       <height>501</height>
      </rect>
@@ -37,7 +37,7 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>50</y>
+       <y>40</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -52,20 +52,20 @@
     <widget class="QTextBrowser" name="text_log">
      <property name="geometry">
       <rect>
-       <x>110</x>
-       <y>40</y>
-       <width>341</width>
-       <height>111</height>
+       <x>470</x>
+       <y>30</y>
+       <width>251</width>
+       <height>191</height>
       </rect>
      </property>
     </widget>
     <widget class="QLabel" name="file_name">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>190</y>
+       <x>140</x>
+       <y>260</y>
        <width>101</width>
-       <height>20</height>
+       <height>21</height>
       </rect>
      </property>
      <property name="lineWidth">
@@ -84,8 +84,8 @@
     <widget class="QProgressBar" name="pro_bar">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>240</y>
+       <x>30</x>
+       <y>300</y>
        <width>351</width>
        <height>20</height>
       </rect>
@@ -98,9 +98,9 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>180</y>
+       <y>250</y>
        <width>101</width>
-       <height>41</height>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
@@ -116,8 +116,8 @@
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>460</x>
-       <y>30</y>
+       <x>20</x>
+       <y>90</y>
        <width>101</width>
        <height>21</height>
       </rect>
@@ -129,21 +129,21 @@
     <widget class="QPushButton" name="confirm">
      <property name="geometry">
       <rect>
-       <x>470</x>
-       <y>280</y>
+       <x>30</x>
+       <y>160</y>
        <width>75</width>
        <height>23</height>
       </rect>
      </property>
      <property name="text">
-      <string>确定</string>
+      <string>选择下载路径</string>
      </property>
     </widget>
     <widget class="QPushButton" name="cancel">
      <property name="geometry">
       <rect>
-       <x>570</x>
-       <y>280</y>
+       <x>30</x>
+       <y>190</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -155,8 +155,8 @@
     <widget class="QPushButton" name="init">
      <property name="geometry">
       <rect>
-       <x>490</x>
-       <y>370</y>
+       <x>30</x>
+       <y>130</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -168,11 +168,24 @@
     <widget class="QListWidget" name="listwidget">
      <property name="geometry">
       <rect>
-       <x>460</x>
-       <y>70</y>
-       <width>221</width>
+       <x>130</x>
+       <y>30</y>
+       <width>241</width>
        <height>192</height>
       </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>40</y>
+       <width>51</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>日志：</string>
      </property>
     </widget>
    </widget>

@@ -5,15 +5,15 @@
 #include "file_struct.h"
 static constexpr char wget_c_name2[32] = "wget_c_file2.json";
 
-void wget_c_file_client::do_send_wget_file_name_text()
+void wget_c_file_client::do_send_wget_file_name_text(std::string wget_file_name)
 {
 
-	std::size_t fsize = get_file_len(wget_c_name2);
-	std::string list_buf = get_file_context(wget_c_name2);
+	std::size_t fsize = get_file_len(wget_file_name);
+	std::string list_buf = get_file_context(wget_file_name);
 
 	name_text_request req;
 	req.header_.length_ = fsize;
-	req.body_.set_name(wget_c_name2,list_buf);
+	req.body_.set_name(wget_file_name,list_buf);
 
 
 	this->async_write(std::move(req), [this](std::error_code ec, std::size_t sz)

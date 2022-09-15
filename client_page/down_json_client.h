@@ -43,7 +43,7 @@ signals:
 	void sign_pro_bar(int maxvalue_, int value_);
 	void sign_file_name(QString file_name);
 	void sign_text_log(QString log_);
-	void sign_down_block(QVariant var,QString loadip, QString loadport);
+	void sign_down_block(QVariant var, int id, QString loadip, QString loadport);
 
 
 private:

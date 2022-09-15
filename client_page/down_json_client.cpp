@@ -101,7 +101,7 @@ void down_json_client::down_load()//把任务放在线程池里向服务器请求下载
 				QVariant var;
 				var.setValue(blks.blocks_[iter.blockid]);
 		
-				emit sign_down_block(var, it->second.server.back().ip.data(), it->second.server.back().port.data());
+				emit sign_down_block(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
 				
 			}
 		}
