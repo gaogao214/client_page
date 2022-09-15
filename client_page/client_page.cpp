@@ -31,12 +31,6 @@ client_page::~client_page()
 	stop();
 }
 
-void client_page::start_clicked()
-{
-	request_connect();
-	wget_c_file_();
-}
-
 void client_page::request_connect()
 {
 	asio::ip::tcp::resolver resolver(io_pool_.get_io_context());
@@ -86,23 +80,13 @@ void client_page::request_connect()
 
 	//QMetaObject::Connection connect_block_ = connect(down_json_ptr_, SIGNAL(sign_down_block(QVariant,QString, QString)), this,
 	//	SLOT(down_block_file_(QVariant,QString, QString)), Qt::QueuedConnection);
-	QMetaObject::Connection connecthanndle_log = connect(down_json_ptr_, SIGNAL(sign_down_block(QVariant, QString, QString)), this, SLOT(down_block_file_(QVariant,QString,QString)), Qt::QueuedConnection);
-	if (connecthanndle_log)
-	{
-		//OutputDebugString(L"block 关联成功+++++++++++++++++++++++++\n");
-		ui.text_log->insertPlainText(u8"text_log 槽函数关联成功\n");
 
-	}
-	else
-	{
-		OutputDebugString(L"block关联失败+++++++++++++++++++++++++\n");
-	}
 
-	/*auto connect_block_ = QObject::connect(down_json_ptr_, &down_json_client::sign_down_block, [this](QVariant var, QString ip, QString port)
+	auto connect_block_ = QObject::connect(down_json_ptr_, &down_json_client::sign_down_block, [this](QVariant var, int id, QString ip, QString port)
 		{
-			this->down_block_file_(var, ip, port);
+			this->down_block_file_(var, id, ip, port);
 			ui.text_log->insertPlainText(u8"block 关联成功\n");
-		});*/
+		});
 
 
 	//QMetaObject::Connection connect_connect_ = connect(down_json_ptr_, SIGNAL(signal_connect()), this,
@@ -114,15 +98,14 @@ void client_page::request_connect()
 }
 
 
-void client_page::down_block_file_(QVariant file_names,QString loadip, QString loadport)
+void client_page::down_block_file_(QVariant file_names, int id, QString loadip, QString loadport)
 {
 	asio::ip::tcp::resolver resolver(io_pool_.get_io_context());
 
 	auto endpoints = resolver.resolve("127.0.0.1", "12314");
 	bck = file_names.value<filestruct::block>();
 
-	OutputDebugString(L"block 关联成功++++++++++++++++++");
-
+	//if(down_block_ptr_==nullptr)
 	auto down_block_ptr_ = std::make_shared<down_block_client>(io_pool_.get_io_context(), endpoints, bck);
 	
 
@@ -134,22 +117,32 @@ void client_page::down_block_file_(QVariant file_names,QString loadip, QString l
 	{
 		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
 	}
-	QMetaObject::Connection connecthanndle_wget = connect(down_block_ptr_.get(), SIGNAL(signal_wget_down_file()), SLOT(wget_c_file_()), Qt::DirectConnection);
+	QMetaObject::Connection connecthanndle_wget = connect(down_block_ptr_.get(), SIGNAL(signal_wget_down_file(QString)), SLOT(wget_c_file_(QString)), Qt::DirectConnection);
 	if (connecthanndle_wget)
 	{
 		ui.text_log->insertPlainText(u8"客户端转服务器 信号与槽 关联成功\n");
 	}
 
+	down_block_ptr_->number_ = id;
 down_block_ptr_->send_filename();
 
 	down_blocks_.push_back(down_block_ptr_);
 
 
-	
+	/*QMetaObject::Connection connecthanndle_pro_bar = connect(down_block_ptr_.get(), SIGNAL(signal_pro_bar(int, int)), this, SLOT(show_progress_bar(int, int)), Qt::QueuedConnection);
+	if (connecthanndle_pro_bar)
+	{
+		ui.text_log->insertPlainText(u8"block _pro_bar 信号与槽 关联成功\n");
+	}*/
+	//QMetaObject::Connection connecthanndle_name = connect(down_block_.get(), SIGNAL(signal_file_name_(QString)), this, SLOT(show_file_name(QString)), Qt::QueuedConnection);
+	//if (connecthanndle_name)
+	//{
+	//	ui.text_log->insertPlainText(u8"block _file_name 信号与槽 关联成功\n");
+	//}
 }
 
 
-void client_page::wget_c_file_()
+void client_page::wget_c_file_(QString wget_file_name)
 {
 
 	asio::ip::tcp::resolver resolver_(io_pool_.get_io_context());
@@ -158,7 +151,9 @@ void client_page::wget_c_file_()
 	wget_c_file_client_ptr_ = new wget_c_file_client(io_pool_.get_io_context(), endpoint_);
 	while (!wget_c_file_client_ptr_->connect_flag_);
 
-	wget_c_file_client_ptr_->do_send_wget_file_name_text();
+	std::string file_name = wget_file_name.toStdString();
+
+	wget_c_file_client_ptr_->do_send_wget_file_name_text(file_name);
 
 	//m_wget_c_file_ = std::make_shared<wget_c_file_client>(io_pool_.get_io_context(), endpoint_/*,this*/);
 	//m_wget_c_file_->do_send_wget_file_name_text();
@@ -229,14 +224,6 @@ void client_page::send_get_id_port_for_server(std::size_t get_server_id, QString
 	down_json_ptr_->send_id_port(/*id_port*/get_server_id,str);
 }
 
-void client_page::wget_file_client()
-{
-	OutputDebugString(L"wget_file_client   进入槽*******************________________________________________________\n");
-
-	wget_c_file_client_ptr_->do_send_wget_file_name_text();
-
-}
-
 void client_page::init_listview()
 {
 	std::string str;
@@ -263,4 +250,12 @@ void client_page::init_listview()
 			
 	}
 	
+}
+
+void client_page::choose_down_path()
+{
+
+
+
+
 }

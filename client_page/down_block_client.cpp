@@ -12,9 +12,6 @@ void down_block_client::send_filename()
 {
 	blk_copy = blk;
 
-	std::string s = std::to_string(GetCurrentThreadId());
-	OutputDebugStringA(s.data());
-
 	for (auto iter : blk.files)
 	{	
 		auto name = iter;
@@ -174,15 +171,19 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 			wcfi_copy.wget_c_file_list.push_back(wcf);
 
 		}
-
-		std::size_t file_len = get_file_len(downfile_path.path+"\\"+iter.path);
+		//std::size_t file_len = get_file_len(downfile_path.path + "\\" + iter.path);
+		//wcf.wget_name = iter.path;
+		//wcf.offset = file_len;
+		//wcf.id = iter.blockid;
+		//wcfi_copy.wget_c_file_list.push_back(wcf);
+	/*	std::size_t file_len = get_file_len(downfile_path.path+"\\"+iter.path);
 		if (file_len == recive_len)
 		{
-			wcf.wget_name = "";
-			wcf.offset = 0;
-			wcf.id = 0;
+			wcf.wget_name = iter.path;
+			wcf.offset = file_len;
+			wcf.id = iter.blockid;
 			wcfi_copy.wget_c_file_list.push_back(wcf);
-		}
+		}*/
 	}
 
 	str_file = "wget_c_file_" + std::to_string(number_) + ".json";
