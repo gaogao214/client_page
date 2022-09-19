@@ -24,6 +24,7 @@ public:
 protected:
 
 	virtual int read_handle(uint32_t id) override;
+
 	virtual int read_error() override;
 
 public:
@@ -46,6 +47,7 @@ signals:
 	void signal_get_id_port_externl(std::size_t get_server_id, QString get_server_port);
 	void signal_pro_bar(int maxvalue, int value);
 	void signal_file_name_(QString file_name_);
+	void signal_text_log(QString text);
 	void signal_wget_down_file(QString);
 
 private:
@@ -66,8 +68,6 @@ public:
 	std::unordered_map<std::size_t, std::vector<std::string>> id_to_the_files;
 
 	std::string str_file;
-
-	filestruct::block blk_copy;
 
 	std::size_t recive_len;
 

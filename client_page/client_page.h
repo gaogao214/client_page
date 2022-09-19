@@ -25,30 +25,33 @@ public:
 	size_t next_io_context_ = 0;
 
 
+
 public slots:
 
 	void send_get_id_port_for_server(std::size_t get_server_id, QString get_server_port);
+
 	void request_connect();
+	
 	void down_block_file_(QVariant file_names, int id, QString loadip, QString loadport);
+	
 	void wget_c_file_(QString wget_file_name);
+	
 	void show_progress_bar(int maxvalue_, int value_);
+	
 	void show_file_name(QString file_name);
+	
 	void show_text_log(QString log_);
-	void show_connect();
-	void choose_down_path();
+	
 	void init_listview();
+	
+	void show_confirm();
+	
+	void show_flush_dir();
 private:
-	std::vector<std::shared_ptr<down_block_client>> down_blocks_;
+	
+	void show_list_dir();
 
-	wget_c_file_client* wget_c_file_client_ptr_;
-
-	down_json_client* down_json_ptr_;
-
-	filestruct::block bck;
-
-	double dpro;
-
-
+	void choose_down_filename();
 
 public:
 	void start_io_pool()
@@ -69,8 +72,22 @@ public:
 
 public:
 	io_context_pool io_pool_;
-	std::mutex write_mtx_;
+	//std::mutex write_mtx_;
 
 private:
+
+	std::vector<std::shared_ptr<down_block_client>> down_blocks_;
+
+	wget_c_file_client* wget_c_file_client_ptr_;
+
+	down_json_client* down_json_ptr_;
+
+	filestruct::block bck;
+
 	std::shared_ptr<std::thread> pool_thread_ptr_;
+
+	QString text_;
+
+	QString child_qstr;
+
 };

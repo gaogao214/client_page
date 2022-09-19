@@ -23,6 +23,12 @@ protected:
 
 	virtual int read_error() override;
 
+signals:
+	void sign_wget_c_file_text_log(QString text_);
+
+	void sign_wget_c_file_pro_bar(int maxvalue,int value);
+
+	void sign_wget_c_file_name(QString name);
 
 private:
 

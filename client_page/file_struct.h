@@ -16,6 +16,7 @@ namespace filestruct {
 
 	struct files_info                  
 	{
+
 		std::vector<list_json> file_list;
 
 		GX_JSON(file_list);
@@ -88,6 +89,7 @@ inline filestruct::wget_c_file_info wcfi;
 
 inline filestruct::blocks blks_;	
 
+
 inline std::string open_json_file(const std::string& json_name)
 {
 	std::string content{};
@@ -106,8 +108,8 @@ inline std::string open_json_file(const std::string& json_name)
 	}
 
 	return content;
-
 }
+
 inline void parse_client_list_json(std::string name)
 {
 	std::string readbuffer = open_json_file(name);
@@ -141,14 +143,18 @@ inline filestruct::wget_c_file_info  parse_wget_c_file_json(const std::string& n
 	return wcfi;
 }
 
+
+
 inline void save_file(const char* name, const char* file_buf)
 {
 	volatile int len = 0;
 
 	std::ofstream save_file_(name, std::ios::out | std::ios::binary);
 
-	save_file_.write(file_buf, strlen(file_buf) - len);
+	if(file_buf!=nullptr)
+		save_file_.write(file_buf, strlen(file_buf) - len);
 	
+	save_file_.flush();
 	save_file_.close();
 
 }

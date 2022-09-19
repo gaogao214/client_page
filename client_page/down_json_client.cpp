@@ -31,21 +31,27 @@ int down_json_client::read_handle(uint32_t id)
 
 		if (list_==0)
 		{
-			OutputDebugString(L"list.json 接收成功\n");
 			parse_server_list_json(resp.body_.text_);
 
 			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));
 
 			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
 
+			std::string str = resp.header_.name_ + std::string(u8"接收成功\n");
+			QString qstr = QString::fromStdString(str);
+
+			emit sign_text_log(qstr);
 		}
 		if (id_==0)
 		{
-			OutputDebugString(L"id.json 接收成功\n");
-
 			save_file(resp.header_.name_, resp.body_.text_);
 
 			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
+
+			std::string str = resp.header_.name_ + std::string(u8"接收成功\n");
+			QString qstr = QString::fromStdString(str);
+
+			emit sign_text_log(qstr);
 
 			parse_block_json(resp.body_.text_);
 
@@ -67,15 +73,7 @@ void down_json_client::isfile_exist(const char* file_buf, int buf_len)
 	std::fstream list(list_name, std::ios::binary | std::ios::out | std::ios::app);
 	if (!list.is_open())
 	{
-		while (file_buf != nullptr)
-		{
-			list.write(file_buf, buf_len);
-		}
-
-		list.flush();
-
-		list.close();
-
+		save_file(list_name, file_buf);
 	}
 	else {
 		parse_client_list_json(list_name);
@@ -134,6 +132,9 @@ void down_json_client::send_id_port(std::size_t id, std::string port)
 		{
 			if (!ec)
 			{
+				std::string str(u8" ip port 发送成功 \n");
+				QString qstr = QString::fromStdString(str);
+				emit sign_text_log(qstr);
 			}
 		}); 
 

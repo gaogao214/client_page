@@ -7,8 +7,6 @@
 
 void down_block_client::send_filename()
 {
-	blk_copy = blk;
-
 	for (auto iter : blk.files)
 	{	
 
@@ -64,7 +62,6 @@ void down_block_client::recive_file_text(uint32_t id)
 
 		std::memset(resp.header_.name_, 0, 32);
 
-
 		resp.parse_bytes(buffer_.data());
 
 		recive_len = resp.header_.length_;
@@ -76,6 +73,7 @@ void down_block_client::recive_file_text(uint32_t id)
 		file_path = downfile_path.path + "\\" + resp.header_.name_;
 
 		auto total_num = resp.header_.totoal_sequence_;
+
 		std::string text_ = resp.body_.text_;
 
 		map_.emplace(read_name, total_num);
@@ -92,13 +90,8 @@ void down_block_client::recive_file_text(uint32_t id)
 				++count;
 
 				
-				if (resp.header_.totoal_length_<=0 && recive_len<0 && count<0 && recive_len * (count)<0)
-				{
-					OutputDebugStringA("==0 \n");
-					OutputDebugStringA("recive_len<0 \n");
-					OutputDebugStringA("count<0 **********************************\n");
+				if (resp.header_.totoal_length_ <= 0)
 					return;
-				}
 				
 				emit signal_pro_bar(resp.header_.totoal_length_, recive_len * (count));
 
@@ -111,8 +104,10 @@ void down_block_client::recive_file_text(uint32_t id)
 				
 					save_location(file_path, read_name, id_num);
 					
-					emit signal_pro_bar(resp.header_.totoal_length_, recive_len*(count));
+					std::string str = resp.header_.name_ + std::string(u8"接收成功\n");
+					QString qstr = QString::fromStdString(str);
 
+					emit signal_text_log(qstr);
 					count = 0;
 				}
 			}
