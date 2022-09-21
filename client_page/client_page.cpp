@@ -7,6 +7,9 @@
 #include <QListWidgetItem>
 #include <QTreeWidgetItem>
 #include <QStandardItemModel>
+#include <QStringList>
+
+
 client_page::client_page(QWidget* parent)
 	: QMainWindow(parent)
 	, io_pool_(10)
@@ -26,11 +29,9 @@ client_page::client_page(QWidget* parent)
 
 	connect(ui.init, &QPushButton::clicked, this, &client_page::init_listview);
 	connect(ui.connect, &QPushButton::clicked, this, &client_page::request_connect);
-	connect(ui.confirm, &QPushButton::clicked, this, &client_page::show_confirm);
+	connect(ui.confirm, &QPushButton::clicked, this, &client_page::selected_path);
 
 	connect(ui.flush, &QPushButton::clicked, this, &client_page::show_flush_dir);
-
-//	QMetaObject::Connection connecthanndle_pro_bar_ = connect(ui.listwidget,&QTreeWidget::itemPressed, this, &client_page::show_confirm);
 
 	start_io_pool();
 }
@@ -160,16 +161,15 @@ void client_page::show_flush_dir()
 void client_page::show_list_dir()
 {
 	QString qstr;
-	std::string str;
+
 	std::string child_str;
+	QString child_qstr;
 
-	std::string file_path;
-	std::vector<std::string> vstr;
+	QTreeWidgetItem* child_;
 
-	QTreeWidgetItem* item;
-	QTreeWidgetItem* child ;
+	std::set<std::string> vstr;
 
-	QList<QTreeWidgetItem*> child_item;
+	std::string path;
 
 	std::fstream list("list.json");
 
@@ -178,52 +178,89 @@ void client_page::show_list_dir()
 
 	parse_client_list_json("list.json");
 	parse_down_jsonfile("down.json");
+
+	item = new QTreeWidgetItem();
+
+	qstr = QString::fromStdString(downfile_path.path);
+
+	item->setText(0, qstr);
+
 	for (auto& iter : files_inclient.file_list)
 	{
-		child = new QTreeWidgetItem();
+		child_ = new QTreeWidgetItem;
 
-		item = new QTreeWidgetItem();
-
-		file_path = downfile_path.path + "\\" + iter.path;
-
-		auto pos = file_path.find_last_of("\\");
-
-		str = file_path.substr(0, pos);
-		qstr = QString::fromStdString(str);
-
-		child_str = file_path.substr(pos+1);
-
-		child_qstr = QString::fromStdString(child_str);
-
-
-		item->setText(0, qstr);
-
-		auto name = std::find_if(vstr.begin(), vstr.end(), [&](auto file) {return file == str; });
-		if (name == vstr.end())
+		auto pos = iter.path.find_last_of("\\");
+		
+		if (pos == std::string::npos)
 		{
-			vstr.push_back(str);
-		}	
-		else 
-		{
-			continue;
+			child = new QTreeWidgetItem;
+
+			QString q_path = QString::fromStdString(iter.path);
+
+			child->setText(0, q_path);
+
+			item->addChild(child);	
+
 		}
 
-		child->setText(0, child_qstr);
+		if(pos!=std::string::npos)
+		{
+			vstr.insert(path);	
 
-		item->addChild(child);
+			path = iter.path.substr(0, pos);
 
-		ui.listwidget->addTopLevelItem(item);
+			auto path_name = std::find_if(vstr.begin(), vstr.end(), [&](auto file) {return file == path; });
 
-		child->setCheckState(0, Qt::Unchecked);
+			if (path == *vstr.begin())
+			{
+				child_str = iter.path.substr(pos + 1);
 
-		item->setCheckState(0, Qt::Unchecked);
+				child_qstr = QString::fromStdString(child_str);
 
+				child_->setText(0, child_qstr);
 
+				child->addChild(child_);
+
+				child->setCheckState(0, Qt::Unchecked);
+
+			
+			}
+			else
+			{
+				child = new QTreeWidgetItem;
+
+				QString q_path = QString::fromStdString(path);
+
+				child->setText(0, q_path);
+
+				item->addChild(child);
+
+				child->setCheckState(0, Qt::Unchecked);
+
+				child_str = iter.path.substr(pos + 1);
+
+				child_qstr = QString::fromStdString(child_str);
+
+				child_->setText(0, child_qstr);
+
+				child->addChild(child_);
+
+				child->setCheckState(0, Qt::Unchecked);
+			}
+			
+			if (*vstr.begin() == "")
+				vstr.erase(vstr.begin());
+
+		}	
 	}
+	ui.listwidget->addTopLevelItem(item);
+
+	item->setCheckState(0, Qt::Unchecked);
 }
 
-void client_page::show_confirm()
+void client_page::selected_path()
 {
+	std::vector<std::string> path_under_names;
 
 	QTreeWidgetItemIterator it(ui.listwidget);
 
@@ -233,23 +270,86 @@ void client_page::show_confirm()
 
 			ui.listwidget->setCurrentItem(*it);
 
-			QString text_ = (*it)->text(0) + "\n";
+			QString selected_path_ = (*it)->text(0);
 
-			ui.text_log->insertPlainText(text_);
+			for (int i = 0; i < (*it)->childCount(); i++)
+			{
+				QTreeWidgetItem* path_under_child_ = (*it)->child(i);
+
+				QString q_child_name_ = selected_path_+"\\"+path_under_child_->text(0);
+
+				std::string child_name_ = q_child_name_.toStdString();
+
+
+				path_under_names.push_back(child_name_);
+
+				OutputDebugStringA(child_name_.data());
+				OutputDebugStringA("\n");
+
+
+				ui.text_log->insertPlainText(q_child_name_);
+			}
+			choose_down_names(path_under_names);
 		}
 		++it;		
 	}
 }
 
 
-void client_page::choose_down_filename()
-{
+void client_page::choose_down_names(std::vector<std::string> text_)
+{	
+	QVariant var;
 
+	parse_block_json_id("id.json");
 
+	int num = child->childCount();
 
+	for (auto iter : text_)
+	{
+		auto name = std::find_if(files_inclient.file_list.begin(), files_inclient.file_list.end(), [&](auto name_) {return name_.path == iter; });
 
+		if (name == files_inclient.file_list.end())
+			continue;
 
+		choose_blks.blocks_[name->blockid].id = name->blockid;
+		choose_blks.blocks_[name->blockid].files.push_back(name->path);
 
+		auto it = blks_.blocks.find(choose_blks.blocks_[name->blockid].id);
+
+		if (it == blks_.blocks.end())
+			continue;
+
+		count_++;
+		if (num == count_)
+		{
+			var.setValue(choose_blks.blocks_[name->blockid]);
+
+			down_block_file_(var, name->blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
+		}
+	}
+	for (auto& iter : files_inclient.file_list)
+	{
+		auto down_name = std::find_if(text_.begin(), text_.end(), [&](auto name) {return name==iter.path; });
+
+		if (down_name == text_.end())
+			continue;
+
+			choose_blks.blocks_[iter.blockid].id = iter.blockid;
+			choose_blks.blocks_[iter.blockid].files.push_back(iter.path);
+
+			auto it = blks_.blocks.find(choose_blks.blocks_[iter.blockid].id);
+
+			if (it == blks_.blocks.end())
+				continue;
+
+			count_++;
+			if (num == count_)
+			{
+				var.setValue(choose_blks.blocks_[iter.blockid]);
+
+				down_block_file_(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
+			}	
+	}
 }
 
 

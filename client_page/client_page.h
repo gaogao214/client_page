@@ -44,14 +44,14 @@ public slots:
 	
 	void init_listview();
 	
-	void show_confirm();
+	void selected_path();
 	
 	void show_flush_dir();
 private:
 	
 	void show_list_dir();
 
-	void choose_down_filename();
+	void choose_down_names(std::vector<std::string> text_);
 
 public:
 	void start_io_pool()
@@ -86,8 +86,11 @@ private:
 
 	std::shared_ptr<std::thread> pool_thread_ptr_;
 
-	QString text_;
+	filestruct::blocks_for_download choose_blks;
 
-	QString child_qstr;
+	QTreeWidgetItem* item;
 
+	QTreeWidgetItem* child;
+
+	int count_ = 1;
 };

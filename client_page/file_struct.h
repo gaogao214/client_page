@@ -134,6 +134,13 @@ inline void parse_block_json(const char* text_json)
 	blks_.deserializeFromJSON(text_json);
 }
 
+inline void parse_block_json_id(std::string name)
+{
+	std::string readbuffer = open_json_file(name);
+
+	blks_.deserializeFromJSON(readbuffer.c_str());
+}
+
 inline filestruct::wget_c_file_info  parse_wget_c_file_json(const std::string& name)
 {
 	std::string readbuffer = open_json_file(name);
