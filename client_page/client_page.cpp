@@ -33,6 +33,13 @@ client_page::client_page(QWidget* parent)
 
 	connect(ui.flush, &QPushButton::clicked, this, &client_page::show_flush_dir);
 
+	//QMetaObject::Connection connecthanndle_pro_bar_ = connect(ui.listwidget, &QTreeWidget::itemChanged, this, &client_page::changed_check);
+	QMetaObject::Connection connecthanndle_ = connect(ui.listwidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(itemChangedSlot(QTreeWidgetItem*, int)));
+
+	QMetaObject::Connection connecthanndle_qtree = connect(ui.listwidget, SIGNAL(itemChanged(QTreeWidgetItem*)), this, SLOT(itemChangedSlot(QTreeWidgetItem*)));
+
+
+
 	start_io_pool();
 }
 
@@ -200,7 +207,8 @@ void client_page::show_list_dir()
 			child->setText(0, q_path);
 
 			item->addChild(child);	
-
+			
+			child->setCheckState(0,Qt::Unchecked);
 		}
 
 		if(pos!=std::string::npos)
@@ -220,10 +228,8 @@ void client_page::show_list_dir()
 				child_->setText(0, child_qstr);
 
 				child->addChild(child_);
-
-				child->setCheckState(0, Qt::Unchecked);
-
 			
+				child_->setCheckState(0,Qt::Unchecked);
 			}
 			else
 			{
@@ -245,7 +251,7 @@ void client_page::show_list_dir()
 
 				child->addChild(child_);
 
-				child->setCheckState(0, Qt::Unchecked);
+				child_->setCheckState(0, Qt::Unchecked);
 			}
 			
 			if (*vstr.begin() == "")
@@ -256,11 +262,18 @@ void client_page::show_list_dir()
 	ui.listwidget->addTopLevelItem(item);
 
 	item->setCheckState(0, Qt::Unchecked);
+
+	
 }
+
 
 void client_page::selected_path()
 {
 	std::vector<std::string> path_under_names;
+
+	QString q_child_name_;
+	QString q_grandchild_name_;
+	std::string child_name_;
 
 	QTreeWidgetItemIterator it(ui.listwidget);
 
@@ -272,16 +285,46 @@ void client_page::selected_path()
 
 			QString selected_path_ = (*it)->text(0);
 
+			std::string str = selected_path_.toStdString();
+
 			for (int i = 0; i < (*it)->childCount(); i++)
 			{
 				QTreeWidgetItem* path_under_child_ = (*it)->child(i);
+				
+				if (str == downfile_path.path)
+				{
+					q_child_name_ = path_under_child_->text(0);
 
-				QString q_child_name_ = selected_path_+"\\"+path_under_child_->text(0);
+					if (path_under_child_->childCount() > 0)
+					{
+						for (int j = 0; j < path_under_child_->childCount(); j++)
+						{
+							QTreeWidgetItem* path_under_grandchild_ = path_under_child_->child(j);
+			
+							q_grandchild_name_ = path_under_child_->text(0) + "\\" + path_under_grandchild_->text(0);
 
-				std::string child_name_ = q_child_name_.toStdString();
+							std::string grandchild_name_ = q_grandchild_name_.toStdString();
 
+							path_under_names.push_back(grandchild_name_);
 
-				path_under_names.push_back(child_name_);
+						}
+					}
+					else
+					{
+						child_name_ = q_child_name_.toStdString();
+
+						path_under_names.push_back(child_name_);
+					}
+				}
+				else
+				{
+					q_child_name_ = selected_path_ + "\\" + path_under_child_->text(0);
+
+					child_name_ = q_child_name_.toStdString();
+
+					path_under_names.push_back(child_name_);
+
+				}
 
 				OutputDebugStringA(child_name_.data());
 				OutputDebugStringA("\n");
@@ -289,10 +332,12 @@ void client_page::selected_path()
 
 				ui.text_log->insertPlainText(q_child_name_);
 			}
-			choose_down_names(path_under_names);
 		}
 		++it;		
 	}
+
+	choose_down_names(path_under_names);
+
 }
 
 
@@ -302,38 +347,22 @@ void client_page::choose_down_names(std::vector<std::string> text_)
 
 	parse_block_json_id("id.json");
 
-	int num = child->childCount();
-
-	for (auto iter : text_)
+	for (auto& iter : files_inclient.file_list)
 	{
-		auto name = std::find_if(files_inclient.file_list.begin(), files_inclient.file_list.end(), [&](auto name_) {return name_.path == iter; });
-
-		if (name == files_inclient.file_list.end())
+		auto down_name = std::find_if(text_.begin(), text_.end(), [&](auto name) {return name == iter.path; });
+		if (down_name == text_.end())
 			continue;
-
-		choose_blks.blocks_[name->blockid].id = name->blockid;
-		choose_blks.blocks_[name->blockid].files.push_back(name->path);
-
-		auto it = blks_.blocks.find(choose_blks.blocks_[name->blockid].id);
-
-		if (it == blks_.blocks.end())
-			continue;
-
-		count_++;
-		if (num == count_)
-		{
-			var.setValue(choose_blks.blocks_[name->blockid]);
-
-			down_block_file_(var, name->blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
-		}
+		
+		id_index_[iter.blockid] += 1;
 	}
 	for (auto& iter : files_inclient.file_list)
 	{
 		auto down_name = std::find_if(text_.begin(), text_.end(), [&](auto name) {return name==iter.path; });
-
 		if (down_name == text_.end())
 			continue;
 
+		if (down_name != text_.end())
+		{
 			choose_blks.blocks_[iter.blockid].id = iter.blockid;
 			choose_blks.blocks_[iter.blockid].files.push_back(iter.path);
 
@@ -342,14 +371,76 @@ void client_page::choose_down_names(std::vector<std::string> text_)
 			if (it == blks_.blocks.end())
 				continue;
 
-			count_++;
-			if (num == count_)
-			{
-				var.setValue(choose_blks.blocks_[iter.blockid]);
+			int num_ = choose_blks.blocks_.size();
 
-				down_block_file_(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
-			}	
+			index_[iter.blockid] += 1;
+
+			if(id_index_[iter.blockid]==index_[iter.blockid])
+			{
+					var.setValue(choose_blks.blocks_[iter.blockid]);
+
+					down_block_file_(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
+			}
+
+		}			
 	}
 }
 
+void client_page::setChildCheckState(QTreeWidgetItem* item, Qt::CheckState cs)
+{
+	if (!item) return;
+	for (int i = 0; i < item->childCount(); i++)
+	{
+		QTreeWidgetItem* child = item->child(i);
+		if (child->checkState(0) != cs)
+		{
+			child->setCheckState(0, cs);
+		}
+	}
+	setParentCheckState(item->parent());
+}
 
+void client_page::setParentCheckState(QTreeWidgetItem* item)
+{
+	if (!item) return;
+	int selectedCount = 0;
+	int childCount = item->childCount();
+	for (int i = 0; i < childCount; i++)
+	{
+		QTreeWidgetItem* child = item->child(i);
+		if (child->checkState(0) == Qt::Checked)
+		{
+			selectedCount++;
+		}
+	}
+
+	if (selectedCount == 0) {
+		item->setCheckState(0, Qt::Unchecked);
+	}
+	else if (selectedCount == childCount) {
+		item->setCheckState(0, Qt::Checked);
+	}
+	else {
+		item->setCheckState(0, Qt::PartiallyChecked);
+	}
+
+}
+
+
+void client_page::itemChangedSlot(QTreeWidgetItem* item, int column)
+{
+	if (Qt::PartiallyChecked != item->checkState(0))
+		setChildCheckState(item, item->checkState(0));
+
+	if (Qt::PartiallyChecked == item->checkState(0))
+		if (!isTopItem(item))
+			item->parent()->setCheckState(0, Qt::PartiallyChecked);
+}
+
+
+bool client_page::isTopItem(QTreeWidgetItem* item)
+{
+	if (!item) return false;
+	if (!item->parent()) return true;
+	return false;
+}

@@ -47,6 +47,15 @@ public slots:
 	void selected_path();
 	
 	void show_flush_dir();
+
+	void setChildCheckState(QTreeWidgetItem* itm,Qt::CheckState cs);
+
+	void setParentCheckState(QTreeWidgetItem* item);
+
+	void itemChangedSlot(QTreeWidgetItem* item, int column);
+
+	bool isTopItem(QTreeWidgetItem* item);
+
 private:
 	
 	void show_list_dir();
@@ -92,5 +101,8 @@ private:
 
 	QTreeWidgetItem* child;
 
-	int count_ = 1;
+	int count_ = 0;
+
+	std::unordered_map<int, int> id_index_;
+	std::unordered_map<int, int> index_;
 };
