@@ -114,6 +114,7 @@ void down_json_client::down_load()
 				QVariant var;
 				var.setValue(blks.blocks_[iter.blockid]);
 		
+				OutputDebugStringA("down_load emit succeed ! \n");
 				emit sign_down_block(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
 				
 			}

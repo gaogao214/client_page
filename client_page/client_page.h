@@ -56,6 +56,8 @@ public slots:
 
 	bool isTopItem(QTreeWidgetItem* item);
 
+	void a_list_of(bool checked);
+
 private:
 	
 	void show_list_dir();

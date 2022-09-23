@@ -81,6 +81,7 @@ namespace filestruct {
 	};
 
 }
+
 inline filestruct::files_info files_inclient;
 inline filestruct::files_info files_inserver;	
 

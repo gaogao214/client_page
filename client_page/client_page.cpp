@@ -8,6 +8,7 @@
 #include <QTreeWidgetItem>
 #include <QStandardItemModel>
 #include <QStringList>
+#include <filesystem>
 
 
 client_page::client_page(QWidget* parent)
@@ -33,12 +34,12 @@ client_page::client_page(QWidget* parent)
 
 	connect(ui.flush, &QPushButton::clicked, this, &client_page::show_flush_dir);
 
-	//QMetaObject::Connection connecthanndle_pro_bar_ = connect(ui.listwidget, &QTreeWidget::itemChanged, this, &client_page::changed_check);
 	QMetaObject::Connection connecthanndle_ = connect(ui.listwidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(itemChangedSlot(QTreeWidgetItem*, int)));
 
-	QMetaObject::Connection connecthanndle_qtree = connect(ui.listwidget, SIGNAL(itemChanged(QTreeWidgetItem*)), this, SLOT(itemChangedSlot(QTreeWidgetItem*)));
+	//connect(ui.a_list_of, &QPushButton::clicked, this, &client_page::a_list_of);
+	QMetaObject::Connection connect_ = connect(ui.a_list_of, SIGNAL(clicked(bool)), this, SLOT(a_list_of(bool)));
 
-
+	ui.a_list_of->setCheckable(true);
 
 	start_io_pool();
 }
@@ -120,7 +121,6 @@ void client_page::wget_c_file_(QString wget_file_name)
 
 void client_page::show_progress_bar(int maxvalue_, int value_)
 {
-
 	double dpro = (value_ * 100.00) / maxvalue_;
 
 	ui.pro_bar->setValue(dpro);
@@ -365,6 +365,13 @@ void client_page::choose_down_names(std::vector<std::string> text_)
 		{
 			choose_blks.blocks_[iter.blockid].id = iter.blockid;
 			choose_blks.blocks_[iter.blockid].files.push_back(iter.path);
+			
+			std::string path_filename = downfile_path.path + "\\" + iter.path;
+
+			std::filesystem::remove(path_filename);
+			OutputDebugStringA(path_filename.data());
+			OutputDebugStringA("\n");
+
 
 			auto it = blks_.blocks.find(choose_blks.blocks_[iter.blockid].id);
 
@@ -443,4 +450,11 @@ bool client_page::isTopItem(QTreeWidgetItem* item)
 	if (!item) return false;
 	if (!item->parent()) return true;
 	return false;
+}
+
+void client_page::a_list_of(bool checked)
+{
+	ui.listwidget->setItemsExpandable(true);
+
+	ui.listwidget->expandAll();
 }

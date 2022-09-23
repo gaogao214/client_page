@@ -7,6 +7,8 @@
 
 void down_block_client::send_filename()
 {
+	OutputDebugStringA("down_block receive succeed ! \n");
+
 	for (auto iter : blk.files)
 	{	
 
@@ -27,6 +29,8 @@ void down_block_client::send_filename()
 				if (!ec)
 				{
 					does_the_folder_exist(iter);
+
+					OutputDebugStringA("async write :");
 					OutputDebugStringA(iter.data());
 					OutputDebugString(L"\n");
 
@@ -60,8 +64,6 @@ void down_block_client::recive_file_text(uint32_t id)
 
 		id_text_response resp;
 
-		std::memset(resp.header_.name_, 0, 32);
-
 		resp.parse_bytes(buffer_.data());
 
 		recive_len = resp.header_.length_;
@@ -87,15 +89,23 @@ void down_block_client::recive_file_text(uint32_t id)
 			{
 
 				file.write(text_.data(), recive_len);
-				++count;
 
 				
 				if (resp.header_.totoal_length_ <= 0)
 					return;
 				
-				emit signal_pro_bar(resp.header_.totoal_length_, recive_len * (count));
+				if (recive_len < 8192)
+				{
+					recive_len =(8192 * count)+ recive_len;
+				}
+				else if(recive_len == 8192)
+				{
+					recive_len= 8192 * count;
+				}
 
-			
+				emit signal_pro_bar(resp.header_.totoal_length_, recive_len );
+
+				++count;
 
 				if (iter->second == count)
 				{
@@ -109,10 +119,11 @@ void down_block_client::recive_file_text(uint32_t id)
 
 					emit signal_text_log(qstr);
 					count = 0;
+					recive_len = 0;
 				}
 			}
 		}
-
+		file.close();
 		break;
 	}
 }
