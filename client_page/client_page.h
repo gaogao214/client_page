@@ -28,6 +28,12 @@ public:
 
 public slots:
 
+	void init_checkedbox();
+
+	void save_lose_sight_of_path();
+
+	void save_forced_upload_path();
+
 	void send_get_id_port_for_server(std::size_t get_server_id, QString get_server_port);
 
 	void request_connect();
@@ -42,27 +48,31 @@ public slots:
 	
 	void show_text_log(QString log_);
 	
-	void init_listview();
-	
-	void selected_path();
-	
-	void show_flush_dir();
+	void add_lose_sight_of_listview(bool);
 
-	void setChildCheckState(QTreeWidgetItem* itm,Qt::CheckState cs);
+	void add_upload_listview(bool);
 
-	void setParentCheckState(QTreeWidgetItem* item);
+	void clear_log_();
 
-	void itemChangedSlot(QTreeWidgetItem* item, int column);
+	void delete_lose_signt_of_listwidget();
 
-	bool isTopItem(QTreeWidgetItem* item);
+	void delete_upload_listwidget();
 
-	void a_list_of(bool checked);
+	void clear_lose_signt_of_listwidget();
+
+	void clear_upload_listwidget();
+
+	void start_upload_file();
+
+	void selected_forced_updating_path();
+
+	void selected_lose_signt_of_path();
+
+	void forced_updating_path(std::vector<std::string> path);
 
 private:
 	
-	void show_list_dir();
-
-	void choose_down_names(std::vector<std::string> text_);
+	
 
 public:
 	void start_io_pool()
@@ -83,7 +93,6 @@ public:
 
 public:
 	io_context_pool io_pool_;
-	//std::mutex write_mtx_;
 
 private:
 
@@ -98,10 +107,6 @@ private:
 	std::shared_ptr<std::thread> pool_thread_ptr_;
 
 	filestruct::blocks_for_download choose_blks;
-
-	QTreeWidgetItem* item;
-
-	QTreeWidgetItem* child;
 
 	int count_ = 0;
 

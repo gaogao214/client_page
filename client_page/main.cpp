@@ -21,7 +21,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     client_page w;
     w.setWindowIcon(QIcon("images/client.ico"));
-    QApplication::setStyle(QStyleFactory::create("Fusion"));
+    //QApplication::setStyle(QStyleFactory::create("Fusion"));
+    //QApplication::setStyle(QStyleFactory::create("plastique"));
+    //QApplication::setStyle(QStyleFactory::create("windows"));
+    //QApplication::setStyle(QStyleFactory::create("macintosh"));
+    //QApplication::setStyle(QStyleFactory::create("windowsvista"));
 
     w.show();
 

@@ -5,19 +5,21 @@
 #include <QMetaType>
 #include <QVariant>
 #include <QListWidgetItem>
-#include <QTreeWidgetItem>
 #include <QStandardItemModel>
 #include <QStringList>
 #include <filesystem>
-
-
+#include <QInputDialog>
+#include <QCheckBox>
+#include <QFile>
+#include <QTextStream>
+#include <QDir>
 client_page::client_page(QWidget* parent)
 	: QMainWindow(parent)
 	, io_pool_(10)
 {
 	ui.setupUi(this);
 
-	ui.listwidget->setHeaderLabel(u8"选择要下载的文件路径");
+	init_checkedbox();
 
 	ui.pro_bar->setOrientation(Qt::Horizontal);  
 	ui.pro_bar->setMinimum(0); 
@@ -28,18 +30,23 @@ client_page::client_page(QWidget* parent)
 	qRegisterMetaType<QTextCursor>("QTextCursor");
 	qRegisterMetaType<std::size_t>("std:::size_t");
 
-	connect(ui.init, &QPushButton::clicked, this, &client_page::init_listview);
+	connect(ui.add_lose, SIGNAL(clicked(bool)), this, SLOT(add_lose_sight_of_listview(bool)));
+
+	connect(ui.add_upload,SIGNAL(clicked(bool)),this,SLOT(add_upload_listview(bool)));
+
 	connect(ui.connect, &QPushButton::clicked, this, &client_page::request_connect);
-	connect(ui.confirm, &QPushButton::clicked, this, &client_page::selected_path);
 
-	connect(ui.flush, &QPushButton::clicked, this, &client_page::show_flush_dir);
+	connect(ui.clear_log, &QPushButton::clicked, this, &client_page::clear_log_);
 
-	QMetaObject::Connection connecthanndle_ = connect(ui.listwidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(itemChangedSlot(QTreeWidgetItem*, int)));
+	connect(ui.delete_lose,&QPushButton::clicked,this,&client_page::delete_lose_signt_of_listwidget);
 
-	//connect(ui.a_list_of, &QPushButton::clicked, this, &client_page::a_list_of);
-	QMetaObject::Connection connect_ = connect(ui.a_list_of, SIGNAL(clicked(bool)), this, SLOT(a_list_of(bool)));
+	connect(ui.delete_upload, &QPushButton::clicked, this, &client_page::delete_upload_listwidget);
 
-	ui.a_list_of->setCheckable(true);
+	connect(ui.clear_lose,&QPushButton::clicked,this,&client_page::clear_lose_signt_of_listwidget);
+
+	connect(ui.clear_upload,&QPushButton::clicked,this,&client_page::clear_upload_listwidget);
+
+	connect(ui.start_upload,&QPushButton::clicked,this,&client_page::start_upload_file);
 
 	start_io_pool();
 }
@@ -47,6 +54,52 @@ client_page::client_page(QWidget* parent)
 client_page::~client_page()
 {
 	stop();
+}
+
+void client_page::init_checkedbox()
+{
+	QFile state_lose_signt_of_file("E:\\Object_gao\\File_up_download\\qt_object\\client_page\\client_page\\save_lose_signt_of_path.txt");
+	
+	state_lose_signt_of_file.open(QIODevice::ReadOnly);
+
+	QTextStream out(&state_lose_signt_of_file);
+	QList<QString> str_list;
+
+	while (!out.atEnd())
+	{
+		str_list.append(out.readLine());
+	}
+	
+	for (auto& iter : str_list)
+	{
+		QListWidgetItem* item = new QListWidgetItem(iter);
+		item->setCheckState(Qt::Unchecked);
+		ui.listwidget_lose->addItem(item);
+
+		ui.text_log->insertPlainText(iter);
+	}
+
+	QFile state_forced_upload_file("E:\\Object_gao\\File_up_download\\qt_object\\client_page\\client_page\\save_forced_upload_path.txt");
+
+	state_forced_upload_file.open(QIODevice::ReadOnly);
+
+	QTextStream out_(&state_forced_upload_file);
+	QList<QString> strlist;
+
+	while (!out_.atEnd())
+	{
+		strlist.append(out_.readLine());
+	}
+
+	for (auto& iter_ : strlist)
+	{
+		QListWidgetItem* item_ = new QListWidgetItem(iter_);
+		item_->setCheckState(Qt::Unchecked);
+		ui.listwidget_upload->addItem(item_);
+
+		ui.text_log->insertPlainText(iter_);
+	}
+
 }
 
 void client_page::request_connect()
@@ -125,9 +178,6 @@ void client_page::show_progress_bar(int maxvalue_, int value_)
 
 	ui.pro_bar->setValue(dpro);
 	ui.pro_bar->update();
-	ui.pro_bar->setFormat(QString::fromLocal8Bit("当前进度为:%1%").arg(QString::number(dpro, 'f', 1)));
-	ui.pro_bar->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-
 }
 
 void client_page::show_file_name(QString file_name)
@@ -149,223 +199,242 @@ void client_page::send_get_id_port_for_server(std::size_t get_server_id, QString
 
 }
 
-void client_page::init_listview()
+void client_page::save_lose_sight_of_path()
 {
-	ui.init->setEnabled(false);
+	QFile* fp = new QFile;
+	fp->setFileName("save_lose_signt_of_path.txt");
+	QDir::setCurrent("E:\\Object_gao\\File_up_download\\qt_object\\client_page\\client_page\\");
+	bool ok = fp->open(QIODevice::WriteOnly);
 
-	show_list_dir();
+	if (ok)
+	{
+		QTextStream out(fp);
 
+		for (int i = 0; i < ui.listwidget_lose->count(); i++)
+		{
+			out << ui.listwidget_lose->item(i)->text() << endl;
+		}
+		fp->close();
+	}
 }
 
-void client_page::show_flush_dir()
+void client_page::save_forced_upload_path()
 {
 
-	ui.listwidget->clear();
+	QFile* fp = new QFile;
+	fp->setFileName("save_forced_upload_path.txt");
+	QDir::setCurrent("E:\\Object_gao\\File_up_download\\qt_object\\client_page\\client_page\\");
+	bool ok = fp->open(QIODevice::WriteOnly);
 
-	show_list_dir();
+	if (ok)
+	{
+		QTextStream out(fp);
+
+		for (int i = 0; i < ui.listwidget_upload->count(); i++)
+		{
+			out << ui.listwidget_upload->item(i)->text() << endl;
+		}
+		fp->close();
+	}
 }
 
-void client_page::show_list_dir()
+void client_page::add_lose_sight_of_listview(bool)
 {
-	QString qstr;
 
-	std::string child_str;
-	QString child_qstr;
+	bool ok ;
+	QString text = QInputDialog::getText(this, u8"选择忽略路径", u8"请输入忽略路径", QLineEdit::Normal, 0, &ok, Qt::MSWindowsFixedSizeDialogHint);
+	if (ok && !text.isEmpty())
+	{
+		QListWidgetItem* item = new QListWidgetItem(text);
+		item->setCheckState(Qt::Unchecked);
+		ui.listwidget_lose->addItem(item);
 
-	QTreeWidgetItem* child_;
+		save_lose_sight_of_path();
 
-	std::set<std::string> vstr;
+	}
+}
 
-	std::string path;
+void client_page::add_upload_listview(bool)
+{
 
-	std::fstream list("list.json");
+	bool ok;
+	QString text = QInputDialog::getText(this, u8"选择强制更新路径", u8"请输入更新路径", QLineEdit::Normal, 0, &ok, Qt::MSWindowsFixedSizeDialogHint);
+	if (ok && !text.isEmpty())
+	{
 
-	if (!list.is_open())
+		QListWidgetItem* item = new QListWidgetItem(text);
+		item->setCheckState(Qt::Unchecked);
+		ui.listwidget_upload->addItem(item);
+		
+		save_forced_upload_path();
+
+	}
+}
+
+void client_page::delete_lose_signt_of_listwidget()
+{
+	int row = ui.listwidget_lose->count();
+	if (row < 0)
 		return;
 
+	for (int i = 0; i < ui.listwidget_lose->count(); i++)
+	{
+		if (ui.listwidget_lose->item(i)->checkState() == Qt::Checked)
+		{
+			ui.listwidget_lose->takeItem(i);
+
+			save_lose_sight_of_path();
+		}
+	}
+}
+
+void client_page::delete_upload_listwidget()
+{
+	int row = ui.listwidget_upload->count();
+	if (row < 0)
+		return;
+
+	for (int i = 0; i < ui.listwidget_upload->count(); i++)
+	{
+		if (ui.listwidget_upload->item(i)->checkState() == Qt::Checked)
+		{
+			ui.listwidget_upload->takeItem(i);
+
+			save_forced_upload_path();
+		}
+	}
+}
+
+void client_page::start_upload_file()
+{
 	parse_client_list_json("list.json");
 	parse_down_jsonfile("down.json");
+	
+	selected_lose_signt_of_path();
+	selected_forced_updating_path();
+}
 
-	item = new QTreeWidgetItem();
+void client_page::selected_lose_signt_of_path()
+{
+	std::vector<std::string> lose_sight_of_vec_str;
+	std::vector<std::string> lose_str;
+	std::vector<std::string> lose_str_;
+	std::vector<std::string> v_str_;
+	int row = ui.listwidget_lose->count();
+	if (row < 0)
+		return;
 
-	qstr = QString::fromStdString(downfile_path.path);
+	for (int i = 0; i < ui.listwidget_lose->count(); i++)
+	{
+		if (ui.listwidget_lose->item(i)->checkState() == Qt::Checked)
+		{
+			QString qstr = ui.listwidget_lose->item(i)->text();
+			ui.text_log->insertPlainText(qstr);
 
-	item->setText(0, qstr);
+			std::string str = qstr.toStdString();
+
+			lose_str.push_back(str);
+
+			
+		}
+	}
+
 
 	for (auto& iter : files_inclient.file_list)
 	{
-		child_ = new QTreeWidgetItem;
-
 		auto pos = iter.path.find_last_of("\\");
-		
-		if (pos == std::string::npos)
+
+		auto name = iter.path.substr(0, pos);
+
+		auto file_ = std::find_if(lose_str.begin(), lose_str.end(), [&](auto file) { return file == name; });
+
+		if (file_ != lose_str.end()) //忽略的名字
+		//if (str == name)
 		{
-			child = new QTreeWidgetItem;
-
-			QString q_path = QString::fromStdString(iter.path);
-
-			child->setText(0, q_path);
-
-			item->addChild(child);	
-			
-			child->setCheckState(0,Qt::Unchecked);
+			lose_sight_of_vec_str.push_back(iter.path);
 		}
-
-		if(pos!=std::string::npos)
-		{
-			vstr.insert(path);	
-
-			path = iter.path.substr(0, pos);
-
-			auto path_name = std::find_if(vstr.begin(), vstr.end(), [&](auto file) {return file == path; });
-
-			if (path == *vstr.begin())
-			{
-				child_str = iter.path.substr(pos + 1);
-
-				child_qstr = QString::fromStdString(child_str);
-
-				child_->setText(0, child_qstr);
-
-				child->addChild(child_);
-			
-				child_->setCheckState(0,Qt::Unchecked);
-			}
-			else
-			{
-				child = new QTreeWidgetItem;
-
-				QString q_path = QString::fromStdString(path);
-
-				child->setText(0, q_path);
-
-				item->addChild(child);
-
-				child->setCheckState(0, Qt::Unchecked);
-
-				child_str = iter.path.substr(pos + 1);
-
-				child_qstr = QString::fromStdString(child_str);
-
-				child_->setText(0, child_qstr);
-
-				child->addChild(child_);
-
-				child_->setCheckState(0, Qt::Unchecked);
-			}
-			
-			if (*vstr.begin() == "")
-				vstr.erase(vstr.begin());
-
-		}	
 	}
-	ui.listwidget->addTopLevelItem(item);
 
-	item->setCheckState(0, Qt::Unchecked);
-
-	
+	for (int i = 0; i < ui.listwidget_lose->count(); i++)
+	{
+		if (ui.listwidget_lose->item(i)->checkState() == Qt::Checked)
+		{
+			for (auto& iter : files_inclient.file_list)
+			{
+				auto name_ = std::find_if(lose_sight_of_vec_str.begin(), lose_sight_of_vec_str.end(), [&](auto file) {return file == iter.path; });
+				if (name_ == lose_sight_of_vec_str.end())
+				{
+					lose_str_.push_back(iter.path);
+				}
+			}
+		}
+	}
+	forced_updating_path(lose_str_);
 }
 
-
-void client_page::selected_path()
+void client_page::selected_forced_updating_path()
 {
-	std::vector<std::string> path_under_names;
+	std::vector<std::string> vec_str;
 
-	QString q_child_name_;
-	QString q_grandchild_name_;
-	std::string child_name_;
+	int row = ui.listwidget_upload->count();
+	if (row < 0)
+		return;
 
-	QTreeWidgetItemIterator it(ui.listwidget);
 
-	while (*it) {
+	for (int i = 0; i < ui.listwidget_upload->count(); i++)
+	{
+		if (ui.listwidget_upload->item(i)->checkState() == Qt::Checked)
+		{
+			QString qstr = ui.listwidget_upload->item(i)->text();
+			ui.text_log->insertPlainText(qstr);
 
-		if ((*it)->checkState(0) == Qt::Checked) {
+			std::string str = qstr.toStdString();
 
-			ui.listwidget->setCurrentItem(*it);
-
-			QString selected_path_ = (*it)->text(0);
-
-			std::string str = selected_path_.toStdString();
-
-			for (int i = 0; i < (*it)->childCount(); i++)
+			for (auto& iter : files_inclient.file_list)
 			{
-				QTreeWidgetItem* path_under_child_ = (*it)->child(i);
-				
-				if (str == downfile_path.path)
+				auto pos = iter.path.find_last_of("\\");
+				auto path_ = iter.path.substr(0, pos);
+				if (path_ == str)
 				{
-					q_child_name_ = path_under_child_->text(0);
-
-					if (path_under_child_->childCount() > 0)
-					{
-						for (int j = 0; j < path_under_child_->childCount(); j++)
-						{
-							QTreeWidgetItem* path_under_grandchild_ = path_under_child_->child(j);
-			
-							q_grandchild_name_ = path_under_child_->text(0) + "\\" + path_under_grandchild_->text(0);
-
-							std::string grandchild_name_ = q_grandchild_name_.toStdString();
-
-							path_under_names.push_back(grandchild_name_);
-
-						}
-					}
-					else
-					{
-						child_name_ = q_child_name_.toStdString();
-
-						path_under_names.push_back(child_name_);
-					}
+					vec_str.push_back(iter.path);
 				}
-				else
-				{
-					q_child_name_ = selected_path_ + "\\" + path_under_child_->text(0);
-
-					child_name_ = q_child_name_.toStdString();
-
-					path_under_names.push_back(child_name_);
-
-				}
-
-				OutputDebugStringA(child_name_.data());
-				OutputDebugStringA("\n");
-
-
-				ui.text_log->insertPlainText(q_child_name_);
 			}
+			
 		}
-		++it;		
 	}
 
-	choose_down_names(path_under_names);
+	forced_updating_path(vec_str);
+
 
 }
 
-
-void client_page::choose_down_names(std::vector<std::string> text_)
-{	
-	QVariant var;
-
+void client_page::forced_updating_path(std::vector<std::string> path)
+{
 	parse_block_json_id("id.json");
 
+	QVariant var;
+
+	if (path.empty())
+		return;
+
 	for (auto& iter : files_inclient.file_list)
 	{
-		auto down_name = std::find_if(text_.begin(), text_.end(), [&](auto name) {return name == iter.path; });
-		if (down_name == text_.end())
-			continue;
-		
-		id_index_[iter.blockid] += 1;
-	}
-	for (auto& iter : files_inclient.file_list)
-	{
-		auto down_name = std::find_if(text_.begin(), text_.end(), [&](auto name) {return name==iter.path; });
-		if (down_name == text_.end())
+		auto down_name = std::find_if(path.begin(), path.end(), [&](auto name) {return name == iter.path; });
+		if (down_name == path.end())
 			continue;
 
-		if (down_name != text_.end())
-		{
+		id_index_[iter.blockid] += 1;
+	}
+
+	for (auto& iter : files_inclient.file_list)
+	{
+		auto down_name = std::find_if(path.begin(), path.end(), [&](auto name) {return name == iter.path; });
+		if (down_name == path.end())
+			continue;
+
 			choose_blks.blocks_[iter.blockid].id = iter.blockid;
 			choose_blks.blocks_[iter.blockid].files.push_back(iter.path);
-			
+
 			std::string path_filename = downfile_path.path + "\\" + iter.path;
 
 			std::filesystem::remove(path_filename);
@@ -382,79 +451,29 @@ void client_page::choose_down_names(std::vector<std::string> text_)
 
 			index_[iter.blockid] += 1;
 
-			if(id_index_[iter.blockid]==index_[iter.blockid])
+			if (id_index_[iter.blockid] == index_[iter.blockid])
 			{
-					var.setValue(choose_blks.blocks_[iter.blockid]);
+				var.setValue(choose_blks.blocks_[iter.blockid]);
 
-					down_block_file_(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
+				down_block_file_(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
 			}
-
-		}			
 	}
+	choose_blks.blocks_.clear();
 }
 
-void client_page::setChildCheckState(QTreeWidgetItem* item, Qt::CheckState cs)
+void client_page::clear_log_()
 {
-	if (!item) return;
-	for (int i = 0; i < item->childCount(); i++)
-	{
-		QTreeWidgetItem* child = item->child(i);
-		if (child->checkState(0) != cs)
-		{
-			child->setCheckState(0, cs);
-		}
-	}
-	setParentCheckState(item->parent());
+	ui.text_log->clear();
 }
 
-void client_page::setParentCheckState(QTreeWidgetItem* item)
+void client_page::clear_lose_signt_of_listwidget()
 {
-	if (!item) return;
-	int selectedCount = 0;
-	int childCount = item->childCount();
-	for (int i = 0; i < childCount; i++)
-	{
-		QTreeWidgetItem* child = item->child(i);
-		if (child->checkState(0) == Qt::Checked)
-		{
-			selectedCount++;
-		}
-	}
-
-	if (selectedCount == 0) {
-		item->setCheckState(0, Qt::Unchecked);
-	}
-	else if (selectedCount == childCount) {
-		item->setCheckState(0, Qt::Checked);
-	}
-	else {
-		item->setCheckState(0, Qt::PartiallyChecked);
-	}
-
+	ui.listwidget_lose->clear();
+	save_lose_sight_of_path();
 }
 
-
-void client_page::itemChangedSlot(QTreeWidgetItem* item, int column)
+void client_page::clear_upload_listwidget()
 {
-	if (Qt::PartiallyChecked != item->checkState(0))
-		setChildCheckState(item, item->checkState(0));
-
-	if (Qt::PartiallyChecked == item->checkState(0))
-		if (!isTopItem(item))
-			item->parent()->setCheckState(0, Qt::PartiallyChecked);
-}
-
-
-bool client_page::isTopItem(QTreeWidgetItem* item)
-{
-	if (!item) return false;
-	if (!item->parent()) return true;
-	return false;
-}
-
-void client_page::a_list_of(bool checked)
-{
-	ui.listwidget->setItemsExpandable(true);
-
-	ui.listwidget->expandAll();
+	ui.listwidget_upload->clear();
+	save_forced_upload_path();
 }
