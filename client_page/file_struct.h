@@ -153,7 +153,7 @@ inline filestruct::wget_c_file_info  parse_wget_c_file_json(const std::string& n
 
 
 
-inline void save_file(const char* name, const char* file_buf)
+inline void save_file(const char* name, const char* file_buf,int buf_len)
 {
 	volatile int len = 0;
 

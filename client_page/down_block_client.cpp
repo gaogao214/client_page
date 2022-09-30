@@ -11,7 +11,6 @@ void down_block_client::send_filename()
 
 	for (auto iter : blk.files)
 	{	
-
 		total_id_files_num[blk.id].push_back(iter);
 
 		if (iter.empty())
@@ -29,11 +28,6 @@ void down_block_client::send_filename()
 				if (!ec)
 				{
 					does_the_folder_exist(iter);
-
-					OutputDebugStringA("async write :");
-					OutputDebugStringA(iter.data());
-					OutputDebugString(L"\n");
-
 				}
 			});
 	}
@@ -41,23 +35,23 @@ void down_block_client::send_filename()
 
 void down_block_client::does_the_folder_exist(const std::string& list_name)
 {
-
 	std::string file_path;   
 
 	file_path = downfile_path.path + "\\" + list_name;
 	std::size_t found = file_path.find_last_of("\\");
 
 	std::error_code ec;
+
 	if (!std::filesystem::exists(file_path.substr(0, found)))
 	{
 		std::filesystem::create_directories(file_path.substr(0, found), ec);
 	}
-
 }
 
 void down_block_client::recive_file_text(uint32_t id)
 {
 	std::size_t id_num;
+
 	switch (id)
 	{
 	case response_number::id_text_response_:
@@ -76,7 +70,6 @@ void down_block_client::recive_file_text(uint32_t id)
 
 		auto total_num = resp.header_.totoal_sequence_;
 
-		std::string text_ = resp.body_.text_;
 
 		map_.emplace(read_name, total_num);
 
@@ -87,8 +80,8 @@ void down_block_client::recive_file_text(uint32_t id)
 		{
 			if (iter->first == read_name)
 			{
-
-				file.write(text_.data(), recive_len);
+			/*	file.seekp(count*8192,std::ios::beg);*/
+				file.write(resp.body_.text_, resp.header_.length_);
 
 				
 				if (resp.header_.totoal_length_ <= 0)
@@ -97,17 +90,21 @@ void down_block_client::recive_file_text(uint32_t id)
 				if (recive_len < 8192)
 				{
 					recive_len =(8192 * count)+ recive_len;
+					/*using namespace std::chrono_literals;
+					std::this_thread::sleep_for(150ms);*/
 				}
 				else if(recive_len == 8192)
 				{
 					recive_len= 8192 * count;
+					/*using namespace std::chrono_literals;
+					std::this_thread::sleep_for(150ms);*/
 				}
 
 				emit signal_pro_bar(resp.header_.totoal_length_, recive_len );
 
 				++count;
 
-				if (iter->second == count)
+				if (resp.header_.totoal_length_ == recive_len)
 				{
 
 					file.close();
@@ -123,7 +120,7 @@ void down_block_client::recive_file_text(uint32_t id)
 				}
 			}
 		}
-		file.close();
+		//file.close();
 		break;
 	}
 }
@@ -238,7 +235,7 @@ void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,
 
 	json_formatting(text);
 
-	save_file(name.c_str(),text.c_str() );
+	save_file(name.c_str(),text.c_str(),text.size() );
 
 	return;
 }
@@ -262,5 +259,4 @@ void down_block_client::server(const std::string& server_port)
 	fs->run();
 	
 }
-
 

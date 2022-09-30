@@ -33,7 +33,7 @@ int down_json_client::read_handle(uint32_t id)
 		{
 			parse_server_list_json(resp.body_.text_);
 
-			isfile_exist(resp.body_.text_, strlen(resp.body_.text_));
+			isfile_exist(resp.body_.text_,resp.header_.totoal_length_);
 
 			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
 
@@ -44,7 +44,7 @@ int down_json_client::read_handle(uint32_t id)
 		}
 		if (id_==0)
 		{
-			save_file(resp.header_.name_, resp.body_.text_);
+			save_file(resp.header_.name_, resp.body_.text_,resp.header_.totoal_length_);
 
 			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
 
@@ -73,12 +73,12 @@ void down_json_client::isfile_exist(const char* file_buf, int buf_len)
 	std::fstream list(list_name, std::ios::binary | std::ios::out | std::ios::app);
 	if (!list.is_open())
 	{
-		save_file(list_name, file_buf);
+		save_file(list_name, file_buf,buf_len);
 	}
 	else {
 		parse_client_list_json(list_name);
 
-		save_file(list_name, file_buf);
+		save_file(list_name, file_buf,buf_len);
 	}
 }
 

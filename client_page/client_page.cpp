@@ -220,7 +220,6 @@ void client_page::save_lose_sight_of_path()
 
 void client_page::save_forced_upload_path()
 {
-
 	QFile* fp = new QFile;
 	fp->setFileName("save_forced_upload_path.txt");
 	QDir::setCurrent("E:\\Object_gao\\File_up_download\\qt_object\\client_page\\client_page\\");
