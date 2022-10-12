@@ -29,8 +29,7 @@ protected:
 
 public:
 
-
-	void does_the_folder_exist(const std::string& list_name);
+	void whether_the_path_exists(const std::string& list_name);
 
 	void client_to_server(std::string profile_port);    
 
@@ -45,7 +44,7 @@ public:
 signals:
 	
 	void signal_get_id_port_externl(std::size_t get_server_id, QString get_server_port);
-	void signal_pro_bar(int maxvalue, int value);
+	void signal_pro_bar(int maxvalue, int value,int id);
 	void signal_file_name_(QString file_name_);
 	void signal_text_log(QString text);
 	void signal_wget_down_file(QString);

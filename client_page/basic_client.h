@@ -37,14 +37,13 @@ public:
 	{
 		constexpr auto id = _Request::Number;
 
-		std::array<char, 8192+sizeof(uint32_t)+1024> arr{};
+		std::array<char, size_> arr{};
 
 		std::memcpy(arr.data(), &id, sizeof(uint32_t));
 
 		req.to_bytes(arr.data() + sizeof(uint32_t));
 
 		async_write(arr, std::forward<_Handle>(handle));
-
 	}
 
 	void close()
@@ -114,7 +113,16 @@ private:
 				uint32_t proto_id{};
 
 				std:memcpy(&proto_id, buffer_.data(), sizeof(uint32_t));
-				buffer_.fill(0);
+				//buffer_.fill(0);
+				
+				std::string pro = std::to_string(sz);
+
+				OutputDebugStringA(std::string(buffer_.data(),4).data());
+				OutputDebugStringA(std::to_string(buffer_[0]).data());
+				OutputDebugStringA(std::to_string(buffer_[1]).data());
+				OutputDebugStringA(std::to_string(buffer_[2]).data());
+				OutputDebugStringA(std::to_string(buffer_[3]).data());
+				OutputDebugStringA("\n");
 
 				do_read_body(proto_id);
 				
@@ -132,7 +140,11 @@ private:
 
 					return;
 				}
-		
+				
+				
+				OutputDebugStringA(buffer_.data());
+				OutputDebugStringA("do_read_body_\n");
+
 				read_handle(id);
 
 				buffer_.fill(0);

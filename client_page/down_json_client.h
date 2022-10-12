@@ -7,7 +7,7 @@
 #include "file_struct.h"
 #include "io_context_pool.h"
 
-static const char down_json_name[32] = "down.json";
+static constexpr char down_json_name[32] = "down.json";
 
 Q_DECLARE_METATYPE(filestruct::block)
 
@@ -26,11 +26,11 @@ public:
 
 protected:
 	virtual int read_handle(uint32_t id) override;
+
 	virtual int read_error() override;
 
 private:
-
-	void isfile_exist(const char* file_buf, int buf_len);
+	void whether_file_exist(const char* file_buf, int buf_len);
 
 	void down_load();
 
@@ -38,19 +38,20 @@ public:
 	void send_id_port(std::size_t id,std::string port);
 
 signals:
+	//void sign_pro_bar(int maxvalue_,int value_);
 
-	void sign_pro_bar(int maxvalue_,int value_);
 	void sign_file_name(QString file_name);
-	void sign_text_log(QString log_);
-	void sign_down_block(QVariant var, int id, QString loadip, QString loadport);
 
+	void sign_text_log(QString log_);
+
+	void sign_down_block(QVariant var, int id, QString loadip, QString loadport);
 
 private:
 	filestruct::blocks_for_download blks;		
 
-	std::unordered_map<int, int> id_index;		
+	std::unordered_map<int, int> id_index;	
+
 	std::unordered_map<int, int> index;			
 
 	ThreadPool pool;
-
 };

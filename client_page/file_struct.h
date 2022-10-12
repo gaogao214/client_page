@@ -160,7 +160,7 @@ inline void save_file(const char* name, const char* file_buf,int buf_len)
 	std::ofstream save_file_(name, std::ios::out | std::ios::binary);
 
 	if(file_buf!=nullptr)
-		save_file_.write(file_buf, strlen(file_buf) - len);
+		save_file_.write(file_buf, strlen(file_buf)/*- len*/);
 	
 	save_file_.flush();
 	save_file_.close();
@@ -194,7 +194,7 @@ inline std::string get_file_context(const std::string& filename)
 	return buf;
 }
 
-inline void json_formatting(std::string& strtxt)//按照格式写入 json 文件
+inline void json_formatting(std::string& strtxt)
 {
 	unsigned int dzkh = 0; //括号的计数器
 	bool isy = false; //是不是引号

@@ -11,7 +11,7 @@ int client_to_the_session::read_handle(uint32_t id)
 
 	switch (id)
 	{
-	case request_number::id_name_request:
+	case uint32_t(request_number::id_name_request):
 
 		id_name_request req;
 		req.parse_bytes(buffer_);
@@ -21,12 +21,9 @@ int client_to_the_session::read_handle(uint32_t id)
 		OutputDebugString(L"接收成功\n");
 
 		do_send_file(_id, file_name);
-		Sleep(2);
-
 
 		break;
 	}
-
 
 	return 0;
 }
@@ -35,8 +32,6 @@ void client_to_the_session::do_send_file(uint32_t id,const std::string& filename
 {
 	std::size_t file_size = 0;
 	std::string file_path_name = downfile_path.path + "\\" + filename;
-
-	Sleep(2);
 
 	std::ifstream file(file_path_name.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
@@ -61,13 +56,12 @@ void client_to_the_session::do_send_file(uint32_t id,const std::string& filename
 			if (i + 1 == nchunkcount)
 			{
 				nleft = file_size - send_count_size * (nchunkcount - 1);
-
 			}
 			else
 			{
 				nleft = send_count_size;
-
 			}
+
 			std::unique_ptr<char[]> count_file_buf(new char[nleft]);
 
 			file.seekg(i * send_count_size, std::ios::beg);
@@ -112,7 +106,6 @@ void client_to_the_session::do_send_file(uint32_t id,const std::string& filename
 					OutputDebugString(L"\n");
 					OutputDebugStringA(filename.data());
 					OutputDebugString(L"\n");
-
 				}
 			});
 	}

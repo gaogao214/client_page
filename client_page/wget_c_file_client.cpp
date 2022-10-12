@@ -28,7 +28,7 @@ void wget_c_file_client::do_recive_wget_file(uint32_t id )
 {
 	switch (id)
 	{
-	case response_number::offset_text_response_:
+	case uint32_t(response_number::offset_text_response_):
 
 		offset_text_response resp;
 
@@ -55,7 +55,7 @@ void wget_c_file_client::do_recive_wget_file(uint32_t id )
 
 				++count;
 					
-				emit sign_wget_c_file_pro_bar(resp.header_.totoal_length_,resp.header_.length_ * count);
+				//emit sign_wget_c_file_pro_bar(resp.header_.totoal_length_,resp.header_.length_ * count);
 
 
 				if (iter->second == count)

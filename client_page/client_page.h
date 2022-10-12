@@ -4,7 +4,7 @@
 #include <QString>
 #include "ui_client_page.h"
 #include "asio.hpp"
-
+#include <QTime>
 
 #include "io_context_pool.h"
 #include "file_struct.h"
@@ -28,7 +28,7 @@ public:
 
 public slots:
 
-	void init_checkedbox();
+	void init_list_checkedbox();
 
 	void save_lose_sight_of_path();
 
@@ -42,7 +42,7 @@ public slots:
 	
 	void wget_c_file_(QString wget_file_name);
 	
-	void show_progress_bar(int maxvalue_, int value_);
+	void show_progress_bar(int maxvalue_, int value_ ,int id);
 	
 	void show_file_name(QString file_name);
 	
@@ -69,6 +69,10 @@ public slots:
 	void selected_lose_signt_of_path();
 
 	void forced_updating_path(std::vector<std::string> path);
+
+	void init_list_checked(QString filename);
+
+	void save_the_selected_file(QString filename);
 
 private:
 	
@@ -112,4 +116,7 @@ private:
 
 	std::unordered_map<int, int> id_index_;
 	std::unordered_map<int, int> index_;
+
+	int sum=0;
+	int id_sum = 0;
 };

@@ -14,7 +14,7 @@ int down_json_client::read_handle(uint32_t id)
 	
 	switch (id)
 	{
-	case response_number::name_text_response_:
+	case uint32_t(response_number::name_text_response_):
 		
 		name_text_response resp;
 
@@ -26,16 +26,15 @@ int down_json_client::read_handle(uint32_t id)
 
 		emit sign_file_name(resp.header_.name_);
 
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(200ms);
-
 		if (list_==0)
 		{
 			parse_server_list_json(resp.body_.text_);
 
-			isfile_exist(resp.body_.text_,resp.header_.totoal_length_);
+			whether_file_exist(resp.body_.text_,resp.header_.totoal_length_);
 
-			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
+			//emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
+
+			OutputDebugStringA("list.json 接收成功 \n");
 
 			std::string str = resp.header_.name_ + std::string(u8"接收成功\n");
 			QString qstr = QString::fromStdString(str);
@@ -46,7 +45,8 @@ int down_json_client::read_handle(uint32_t id)
 		{
 			save_file(resp.header_.name_, resp.body_.text_,resp.header_.totoal_length_);
 
-			emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
+			//emit sign_pro_bar(resp.header_.totoal_length_, strlen(resp.body_.text_));
+			OutputDebugStringA("id.json 接收成功 \n");
 
 			std::string str = resp.header_.name_ + std::string(u8"接收成功\n");
 			QString qstr = QString::fromStdString(str);
@@ -68,7 +68,7 @@ int down_json_client::read_error()
 	return 0;
 }
 
-void down_json_client::isfile_exist(const char* file_buf, int buf_len)
+void down_json_client::whether_file_exist(const char* file_buf, int buf_len)
 {
 	std::fstream list(list_name, std::ios::binary | std::ios::out | std::ios::app);
 	if (!list.is_open())
@@ -92,7 +92,6 @@ void down_json_client::down_load()
 
 	for (auto& iter : files_inserver.file_list)
 	{
-		
 		auto it_client = std::find_if(files_inclient.file_list.begin(), files_inclient.file_list.end(), [&](auto file) {return file.path == iter.path; });
 
 		if (it_client == files_inclient.file_list.end() || it_client->version < iter.version)
@@ -114,8 +113,8 @@ void down_json_client::down_load()
 				QVariant var;
 				var.setValue(blks.blocks_[iter.blockid]);
 		
-				OutputDebugStringA("down_load emit succeed ! \n");
-				emit sign_down_block(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());
+				emit sign_down_block(var, iter.blockid, it->second.server.back().ip.data(), it->second.server.back().port.data());	
+
 				
 			}
 		}
@@ -124,7 +123,6 @@ void down_json_client::down_load()
 
 void down_json_client::send_id_port(std::size_t id, std::string port)
 {
-	
 	id_port_request req;
 	req.body_.id_ = id;
 	req.body_.set_port(port);
@@ -138,5 +136,4 @@ void down_json_client::send_id_port(std::size_t id, std::string port)
 				emit sign_text_log(qstr);
 			}
 		}); 
-
 }

@@ -7,17 +7,15 @@
 
 void down_block_client::send_filename()
 {
-	OutputDebugStringA("down_block receive succeed ! \n");
-
+	using namespace std::chrono_literals;
+	std::this_thread::sleep_for(200ms);
+	
 	for (auto iter : blk.files)
 	{	
 		total_id_files_num[blk.id].push_back(iter);
 
 		if (iter.empty())
 			continue;
-		
-		using namespace std::chrono_literals;
-		std::this_thread::sleep_for(200ms);
 
 		id_name_request req;
 		req.body_.id_=blk.id;
@@ -27,13 +25,15 @@ void down_block_client::send_filename()
 			{
 				if (!ec)
 				{
-					does_the_folder_exist(iter);
+					OutputDebugStringA("down_block send suesson!!!\n");
+
+					whether_the_path_exists(iter);
 				}
 			});
 	}
 }
 
-void down_block_client::does_the_folder_exist(const std::string& list_name)
+void down_block_client::whether_the_path_exists(const std::string& list_name)
 {
 	std::string file_path;   
 
@@ -54,7 +54,7 @@ void down_block_client::recive_file_text(uint32_t id)
 
 	switch (id)
 	{
-	case response_number::id_text_response_:
+	case uint32_t(response_number::id_text_response_):
 
 		id_text_response resp;
 
@@ -80,33 +80,33 @@ void down_block_client::recive_file_text(uint32_t id)
 		{
 			if (iter->first == read_name)
 			{
-			/*	file.seekp(count*8192,std::ios::beg);*/
+			
 				file.write(resp.body_.text_, resp.header_.length_);
 
-				
+				OutputDebugStringA(read_name.data());
+				OutputDebugStringA("接收成功\n");
+
+
 				if (resp.header_.totoal_length_ <= 0)
 					return;
 				
 				if (recive_len < 8192)
 				{
 					recive_len =(8192 * count)+ recive_len;
-					/*using namespace std::chrono_literals;
-					std::this_thread::sleep_for(150ms);*/
 				}
 				else if(recive_len == 8192)
 				{
 					recive_len= 8192 * count;
-					/*using namespace std::chrono_literals;
-					std::this_thread::sleep_for(150ms);*/
 				}
 
-				emit signal_pro_bar(resp.header_.totoal_length_, recive_len );
+				emit signal_pro_bar(resp.header_.totoal_length_, recive_len ,resp.body_.id_  );
+
+			    
 
 				++count;
 
 				if (resp.header_.totoal_length_ == recive_len)
 				{
-
 					file.close();
 				
 					save_location(file_path, read_name, id_num);
@@ -120,7 +120,6 @@ void down_block_client::recive_file_text(uint32_t id)
 				}
 			}
 		}
-		//file.close();
 		break;
 	}
 }
@@ -194,7 +193,6 @@ void down_block_client::save_location_connect_error(const std::string& name,cons
 
 void down_block_client::save_location(const std::string& name, const std::string& no_path_add_name,std::size_t id_num)
 {
-
 	filestruct::wget_c_file wcf;
 
 	std::ifstream id_file(name, std::ios::binary);
@@ -225,8 +223,6 @@ void down_block_client::save_location(const std::string& name, const std::string
 		
 		OutputDebugString(L"id 块下载完成  客户端转服务器");
 	}
-
-
 }
 
 void down_block_client::save_wget_c_file_json(filestruct::wget_c_file_info wcfi,  std::string name)
